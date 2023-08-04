@@ -1,0 +1,11 @@
+2023-08-04 14:33:03,588 - INFO -  * Executing CurveCurator pipeline version 0.0.6.
+2023-08-04 14:33:03,588 - INFO -  * Reading parameter file of experiment.
+2023-08-04 14:33:03,603 - INFO -  * Loading data file ./evidence.txt.
+2023-08-04 14:33:06,277 - INFO -  * The following normalization factors were applied:
+2023-08-04 14:33:06,284 - INFO - {'Raw 1': 0.58, 'Raw 2': 0.13, 'Raw 3': 0.2, 'Raw 4': -0.61, 'Raw 5': -0.31, 'Raw 6': 0.19, 'Raw 7': 0.24, 'Raw 8': -0.19, 'Raw 9': -0.08, 'Raw 10': -0.15}
+2023-08-04 14:33:06,294 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
+2023-08-04 14:35:58,962 - INFO -  * Fitting curves parameters done !
+2023-08-04 14:35:59,052 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
+2023-08-04 14:35:59,062 - INFO -    alpha=0.05, fc_lim=0.45, s0=0.2141
+2023-08-04 14:36:01,232 - INFO -  * Rendering interactive dashboard using webgl backend ...
+2023-08-04 14:36:02,832 - INFO -  * Dashboard successfully rendered.

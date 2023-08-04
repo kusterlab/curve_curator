@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+tests/integrations_tests
+.idea
+simsi_output
+gui_tools/build
+gui_tools/dist
+.coverage
+system_test.sh
+build
+htmlcov
+dist

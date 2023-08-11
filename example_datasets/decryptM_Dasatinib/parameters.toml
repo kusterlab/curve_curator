@@ -31,4 +31,3 @@ normalization = true							# Median centric normalization
 ['F Statistic']
 alpha = 0.05								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis)
 fc_lim = 0.45								# Absolute Log2 Fold Change limit for a biologically meaningful curve (SAM-Analysis)
-decoy_ratio = 50

@@ -1,5 +1,5 @@
-
-
+[![DOI](https://img.shields.io/badge/DOI%20-%202023.08.07.552260v1%20-be2635?link=https%3A%2F%2Fdoi.org%2F10.1101%2F2023.08.07.552260%20)](https://www.biorxiv.org/content/10.1101/2023.08.07.552260v1)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8215092.svg)](https://doi.org/10.5281/zenodo.8215092)
 
 # CurveCurator
 

@@ -21,6 +21,9 @@ pytest = "^7.3.1"
 seaborn = "^0.12.2"
 pytest-cov = "^4.1.0"
 
+[tool.poetry.scripts]
+CurveCurator = "curve_curator.__main__:main"
+
 [build-system]
 requires = ["poetry-core>=1.4.0"]
 build-backend = "poetry.core.masonry.api"

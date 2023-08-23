@@ -22,7 +22,7 @@ from . import dashboard
 from . import quality_control
 from .__init__ import __version__
 
-if __name__ == '__main__':
+def main():
     # Build a command line parser for parsing multiple config files
     command_line = argparse.ArgumentParser(
         description='CurveCurator',
@@ -111,3 +111,7 @@ if __name__ == '__main__':
 
         # Done
         ui.doneline()
+
+
+if __name__ == '__main__':
+    main()

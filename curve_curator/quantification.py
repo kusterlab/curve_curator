@@ -407,7 +407,11 @@ def run_pipeline(df, config, decoy_mode=False):
     f_statistic_params = config['F Statistic']
 
     # Keep only rows with at least n observed intensity
+    k_rows_0 = len(df)
     df = filter_nans(df, cols_raw, proc_params['max_missing'])
+    k_rows_1 = len(df)
+    if not decoy_mode:
+        ui.message(f" * {k_rows_0 - k_rows_1} Curves were removed because of >{proc_params['max_missing']} missing values.", end='\n')
 
     # Imputation of missing values if requested
     if proc_params['imputation'] and not decoy_mode:

@@ -16,7 +16,7 @@ from scipy.linalg import svd
 
 # Global parameters
 NOISE_LIMITS = (1e-5, 20)  # Variance Range of the Normal error
-PEC50_DELTA = 4  # Delta +/- pEC50 around the doses to define the boundary
+PEC50_DELTA = 2  # Delta +/- pEC50 around the doses to define the boundary
 SLOPE_LIMITS = (0.01, 10)  # Slope Range
 Y_LIMITS = (1e-3, 1e6)  # Y-axis Range
 

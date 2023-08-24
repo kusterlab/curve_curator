@@ -3,32 +3,56 @@
 
 # CurveCurator
 
-CurveCurator is an open-source analysis platform for dose-dependent data sets. It fits a classical 4-parameter equation to estimate effect potency, effect size, and the statistical significance of the observed response. 2D-thresholding efficiently reduces false positives in high-throughput experiments and separates relevant from irrelevant or insignificant hits in an automated and unbiased manner. An interactive dashboard allows users to quickly explore data locally. 
+CurveCurator is an open-source analysis platform for dose-dependent data sets. It fits a classical 4-parameter equation to estimate effect potency, effect size, and the statistical significance of the observed response. 2D-thresholding efficiently reduces false positives in high-throughput experiments and separates relevant from irrelevant or insignificant hits in an automated and unbiased manner. An interactive dashboard allows users to quickly explore data locally.
 
 
 ## Installation:
 
-#### 1. Download the code of this repository and place it next to your data
+#### 1. Install the virtual environment manager anaconda to install CurveCurator and its dependencies safely.
+If you have anaconda already installed on your computer, you can move to step 2. If you still need anaconda, please go to the website (https://www.anaconda.com/) and download the newest version for your operating system. With the anaconda installation, you get an "Anaconda Prompt". This shell will be needed to install and execute the program later. If you are more advanced, you can use other shells too.
 
-#### 2. Install the virtual environment manager anaconda to install package dependencies safely (https://www.anaconda.com/).
-
-#### 3. Move to the repository in your shell
+#### 2. Install a new environment for CurveCurator in the shell.
+Open the "Anaconda Prompt" program. Installation of the environment is only required once. Type the following command into the shell: 
 ```sh
-(base)$ cd <path_to_repository>
+(base)$ conda create -n CurveCuratorEnv pip
 ```
+This will create a new environment with the name CurveCuratorEnv. In this environment, it will install the "pip" software. It will ask you to confirm the installation of some packages for pip. If you have an environment with the same name already created or you prefer a different name, you must either delete it or create an environment with a different name. Please remember the name of the environment. For more information, see the anaconda documentation. 
 
-#### 4. Install the CurveCurator environment
-Installation of the environment is only required once. If you have an environment with the same name already created, you must either delete it or create an environment with a different name. For more information, see the anaconda documentation. 
+#### 3. Activate the CurveCuratorEnv environment
+Activation of the curve_curator environment is always required each time you open a new shell and must be done before you run the pipeline (see section "Run pipeline").
 ```sh
-(base)$ conda env create -f ./environment.yml
+(base)$ conda activate CurveCuratorEnv
+...
+(CurveCuratorEnv)$ 
 ```
+Successful activation is confirmed by seeing the name of the current environment in the braces before the $. 
 
-#### 5. Activate the curve_curator environment
-Activation of the curve_curator environment is required each time you open a new shell and must be done before you run the pipeline (see section "Run pipeline").
+#### 4. Install CurveCurator and its dependencies in the CurveCuratorEnv
+We have registred CurveCurator in PyPi (https://pypi.org/project/curve-curator/). This allows fast installation of the latest stable version using the following pip command. Make sure you are in the correct environment.
 ```sh
-(base)$ conda activate curve_curator
-(curve_curator)$ 
+(CurveCuratorEnv)$ pip install curve-curator
 ```
+Verify installation by seeing that the program exists. If everything was done correctly, you will see the help output of CurveCurator (as shown below) and you are done with the installation.
+```sh
+(CurveCuratorEnv)$ CurveCurator -h
+...
+usage: CurveCurator [-h] [-b] [-f] [-m] [-r [RANDOM]] <PATH>
+
+CurveCurator
+
+positional arguments:
+  <PATH>                Relative path to the config.toml or batch.txt file to run the pipeline.
+
+options:
+  -h, --help            show this help message and exit
+  -b, --batch           Run a batch process with a file containing all the parameter file paths.
+  -f, --fdr             Estimate FDR based on target decoy approach. Estimating the FDR will double the run time.
+  -m, --mad             Perform the medium absolute deviation (MAD) analysis to detect outliers
+  -r [RANDOM], --random [RANDOM] Run the pipeline with <N> random values for H0 simulation.
+```
+If you see instead the message: " 'CurveCurator' is not recognized as an internal or external command, operable program or batch file" or any other error, then there was a problem during the installation. Also, double-check that you are in the correct environment.
+
+If you want to update CurveCurator to the latest version after you have installed it already, redo the pip install of step 4.
 
 ## Preparation:
 
@@ -105,27 +129,29 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 
 
 ## Run pipeline
+There are multiple modes to execute CurveCurator:
 
-#### Option 1. Run the pipeline script for one dataset
-The standard way of running the script. All necessary information is provided via the toml file.
+#### Mode 1. Run the pipeline script for one dataset
+The standard way of running the script is shown below. All necessary information is provided via the toml file. Make sure that you are in the correct environment, which is called 'CurveCuratorEnv' if you have followed the installation guide. 
 ```sh
-(curve_curator)$ python -m curve_curator <toml_path>
+(base)$ conda activate CurveCuratorEnv
+(CurveCuratorEnv)$ CurveCurator <toml_path>
 ```
-There are additional options to enable additional analyses. If the FDR option is activated, Curve Curator will generate decoys based on the data input and estimate the false discovery rate (FDR) for the user-given alpha and fold-change additionally. If the MAD option is activated, the noisy channel detection is performed additionally.
+There are optional parameter to enable additional analysis steps. If the FDR option is activated, Curve Curator will generate decoys based on the data input and estimate the false discovery rate (FDR) for the user-given alpha and fold-change additionally. If the MAD option is activated, the noisy channel detection is performed additionally.
 ```sh
-(curve_curator)$ python -m curve_curator <toml_path> --fdr --mad
+(CurveCuratorEnv)$ CurveCurator <toml_path> --fdr --mad
 ```
 
-#### Option 2. Run the pipeline script for many datasets as batch
+#### Mode 2. Run the pipeline script for many datasets as batch
 The batch_file is just a txt file containing a list of toml file paths that will be processed consecutively. FDR and MAD parameters can be activated optionally.
 ```sh
-(curve_curator)$ python -m curve_curator --batch <batch_file> --fdr --mad
+(CurveCuratorEnv)$ CurveCurator --batch <batch_file> --fdr --mad
 ```
 
-#### Option 3. Run the pipeline with simulated data
+#### Mode 3. Run the pipeline with simulated data
 If you apply non-standard settings and want to experiment with F-value distributions under the H0=true, you can simulate your own distributions. N indicates the number of curves you want to simulate. The generated data will be saved as the input file specified in the toml file. 
 ```sh
-(curve_curator)$ python -m curve_curator <toml_path> --random <N>
+(CurveCuratorEnv)$ CurveCurator <toml_path> --random <N>
 ```
 
 ## Explore data with the interactive dashboard

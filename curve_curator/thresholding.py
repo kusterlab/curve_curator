@@ -124,6 +124,9 @@ def sam_correction(f_values, curve_fold_change, s0):
     Then, the transformed equation 2 becomes: [eq.3] 1/sqrt(F_adj) = 1/sqrt(F) + s0/fc
     Solving again for F_adj results in the final function: [eq.4]  F_adj = 1 / ((1/sqrt(F)) + (s0/fc))**2
     """
+    # Convert to vectorized form
+    f_values, curve_fold_change, s0 = np.asarray(f_values), np.asarray(curve_fold_change), np.asarray(s0)
+    # Calculate s0-adjusted f-values
     with np.errstate(divide='ignore'):
         f_values_adjusted = 1 / ((1 / np.sqrt(f_values)) + (s0 / abs(curve_fold_change)))**2
     return f_values_adjusted

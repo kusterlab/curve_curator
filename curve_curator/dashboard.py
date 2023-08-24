@@ -1104,7 +1104,7 @@ def render(df, config):
                'Curve Front', 'Curve Back', 'Curve R2', 'Curve Regulation']
 
     # Add columns if they are present in the data frame
-    optional_cols = {'Name': str, 'Modified sequence': str, 'Genes': str, 'Proteins': str, 'Peptides': int}
+    optional_cols = {'Name': str, 'Modified sequence': str, 'Genes': str, 'Proteins': str, 'Peptides': int, 'Imputation Position': str}
     optional_cols = {col: col_type for col, col_type in optional_cols.items() if col in df.columns}
     df_cols.extend(optional_cols.keys())
 

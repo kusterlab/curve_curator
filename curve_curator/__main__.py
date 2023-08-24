@@ -22,6 +22,7 @@ from . import dashboard
 from . import quality_control
 from .__init__ import __version__
 
+
 def main():
     # Build a command line parser for parsing multiple config files
     command_line = argparse.ArgumentParser(
@@ -51,7 +52,7 @@ def main():
         dest="path",
         metavar="<PATH>",
         type=str,
-        help="Relative path to the config.toml file to run the pipeline.")
+        help="Relative path to the config.toml or batch.txt file to run the pipeline.")
 
     # Parse the terminal arguments
     args = command_line.parse_args()

@@ -514,7 +514,7 @@ def get_exponential_limited_space(start, end, inf_limit=0.0, num=5000, exp=3):
 # ################## #
 
 
-def dashboard(df, title, out_path, drug_doses, cols_ratio, model, f_statistic_params, bokeh_params, volcano_params, curve_y_range=(0, 2),
+def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_statistic_params, bokeh_params, volcano_params, curve_y_range=(0, 2),
               signal_slider_params=(0, 12, 1200, 1200), score_slider_params=(-1, 2, 20, 20),
               pec50_slider_params=(0, 0, 14, 14), plot_scores=True, plot_signal=True):
     """
@@ -530,6 +530,8 @@ def dashboard(df, title, out_path, drug_doses, cols_ratio, model, f_statistic_pa
         Path to the output file.
     drug_doses : array-like
         Drug doses
+    drug_unit : str
+        unit of the drug doses
     cols_ratio : array-like
         All column names of the ratio data.
     f_statistic_params : dict
@@ -727,7 +729,7 @@ def dashboard(df, title, out_path, drug_doses, cols_ratio, model, f_statistic_pa
     fig2.y_range = Range1d(*curve_y_range)
     fig2.yaxis.axis_label = 'Relative Response'
     fig2.x_range = Range1d(drug_doses.min() / 10, drug_doses.max() * 10)
-    fig2.xaxis.axis_label = 'Concentration [M]'
+    fig2.xaxis.axis_label = f'Concentration [{drug_unit}]'
     fig2.xgrid.visible = False
     fig2.ygrid.visible = False
     fig2.outline_line_color = None
@@ -1063,6 +1065,7 @@ def render(df, config):
     experiments = np.array(config['Experiment']['experiments'])
     drug_concs = np.array(config['Experiment']['doses'])
     drug_scale = config['Experiment']['dose_scale']
+    drug_unit = config['Experiment']['dose_unit']
     control_mask = (drug_concs != 0)
     drug_log_concs = -1 * tool.build_drug_log_concentrations(drug_concs[control_mask], drug_scale)
     drug_concs = drug_concs[control_mask] * drug_scale
@@ -1174,7 +1177,7 @@ def render(df, config):
     volcano_params['x_range'] = (-fc_max, fc_max)
 
     # Render the dashboard
-    dashboard(df[df_cols + cols_ratio], title, out_path, drug_concs, cols_ratio, model, config['F Statistic'], config['Dashboard'],
+    dashboard(df[df_cols + cols_ratio], title, out_path, drug_concs, drug_unit, cols_ratio, model, config['F Statistic'], config['Dashboard'],
               volcano_params=volcano_params, signal_slider_params=signal_slider_params, score_slider_params=score_slider_params,
               pec50_slider_params=pec50_slider_params, plot_scores=plot_scores, plot_signal=plot_signal)
 

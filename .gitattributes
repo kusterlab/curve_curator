@@ -1,2 +1,2 @@
-example_datasets/* linguist-documentation
-example_toml_files/* linguist-documentation
+example_datasets/** linguist-documentation
+example_toml_files/** linguist-documentation

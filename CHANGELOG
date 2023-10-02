@@ -1,3 +1,6 @@
+v0.2.1
+- Fix pip install
+
 v0.2.0
 - Support multiple controls to calculate more accurate ratios
 - Improved stability of dashboards

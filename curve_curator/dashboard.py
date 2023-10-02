@@ -678,11 +678,11 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     fig1.add_tools(dots_hover_tool)
 
     # Add thresholds and potency line. Visibility depends on the used approach
-    volcano_threshold_line_v0 = fig1.line(x='x', y='y', line_width=2, source=threshold_v0, color='red', line_dash='dashed')
+    volcano_threshold_line_v0 = fig1.line(x='x', y='y', line_width=1.5, source=threshold_v0, color='crimson', line_dash='solid')
     volcano_threshold_line_v0.visible = True
-    volcano_threshold_line_v1 = fig1.line(x='x', y='y', line_width=2, source=threshold_v1, color='red', line_dash='dashed')
+    volcano_threshold_line_v1 = fig1.line(x='x', y='y', line_width=1.5, source=threshold_v1, color='crimson', line_dash='solid')
     volcano_threshold_line_v1.visible = False
-    potency_threshold_line_p = fig1.line(x='x', y='y', line_width=2, source=threshold_p, color='red', line_dash='dashed')
+    potency_threshold_line_p = fig1.line(x='x', y='y', line_width=1.5, source=threshold_p, color='crimson', line_dash='solid')
     potency_threshold_line_p.visible = volcano_params['method'] != 'sam'
 
     # Add color bar
@@ -716,7 +716,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
                                                    names=len(drug_doses) * ['example']))
 
     # Plot the Curve plot with fit line and scatter points
-    fit_line = fig2.multi_line(xs='xs', ys='ys', color="red", line_width=5, alpha=0.6, source=curve_fit_source)
+    fit_line = fig2.multi_line(xs='xs', ys='ys', color="crimson", line_width=5, alpha=0.6, source=curve_fit_source)
     curve_dots = fig2.circle(x='x', y='y', fill_color='black', fill_alpha=1, source=curve_dots_source, size=7, line_color='black')
 
     # Add hover tooltips labels to figure 2 for fitted lines and curve dots
@@ -752,7 +752,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
 
     # Plot the data distribution
     hist_boxes_3 = fig3.quad(top=edges[:-1], bottom=edges[1:], left=0, right=hist, fill_color="gray", line_color="white", alpha=1)
-    quality_lines = fig3.multi_line(xs='xs', ys='ys', color="red", line_width=3, alpha=1, source=quality_source)
+    quality_lines = fig3.multi_line(xs='xs', ys='ys', color="crimson", line_width=2.5, alpha=1, source=quality_source)
     threshold1_line = fig3.line(x='x', y='y', color="black", line_width=3, alpha=1, source=signal_threshold1_source, line_dash='dashed')
     threshold2_line = fig3.line(x='x', y='y', color="black", line_width=3, alpha=1, source=signal_threshold2_source, line_dash='dashed')
 
@@ -792,7 +792,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
 
     # Plot the data distribution
     hist_boxes_4 = fig4.quad(top=edges[:-1], bottom=edges[1:], left=0, right=hist, fill_color="gray", line_color="white", alpha=1)
-    identification_lines = fig4.multi_line(xs='xs', ys='ys', color="red", line_width=3, alpha=1, source=identification_source)
+    identification_lines = fig4.multi_line(xs='xs', ys='ys', color="crimson", line_width=2.5, alpha=1, source=identification_source)
     threshold_line1 = fig4.line(x='x', y='y', color="black", line_width=3, alpha=1, source=score_threshold1_source, line_dash='dashed')
     threshold_line2 = fig4.line(x='x', y='y', color="black", line_width=3, alpha=1, source=score_threshold2_source, line_dash='dashed')
 
@@ -826,6 +826,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     potency_bins = int(abs(potency_range[1] - potency_range[0]) // 0.1)
     if len(potency_array) > 0:
         hist, edges = np.histogram(potency_array, density=True, bins=np.linspace(potency_range[0], potency_range[1], potency_bins))
+        hist = hist / max(hist)
     else:
         # if not a single significant curve is present to guarantee that a nice plot is still drawn with empty background
         hist, edges = [0, 1], [-2, -1, 0]
@@ -835,7 +836,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
 
     # Plot the data distribution
     hist_boxes_5 = fig5.quad(top=edges[:-1], bottom=edges[1:], left=0, right=hist, fill_color="gray", line_color="white", alpha=1)
-    potency_lines = fig5.multi_line(xs='xs', ys='ys', color="red", line_width=3, alpha=1, source=potency_source)
+    potency_lines = fig5.multi_line(xs='xs', ys='ys', color="crimson", line_width=2.5, alpha=1, source=potency_source)
     threshold_line1 = fig5.line(x='x', y='y', color="black", line_width=3, alpha=1, source=potency_threshold1_source, line_dash='dashed')
     threshold_line2 = fig5.line(x='x', y='y', color="black", line_width=3, alpha=1, source=potency_threshold2_source, line_dash='dashed')
 

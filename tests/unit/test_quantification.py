@@ -109,6 +109,36 @@ class TestNormalizeValues:
         pd.testing.assert_series_equal(result_factors[self.raw_cols], expected_factors)
 
 
+class TestCalculateRatios:
+    df = pd.DataFrame({
+        'A': [0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, np.nan],
+        'B': [0.0, 1.0, 1.0, 2.0, 2.0, 4.0, 1.0, np.nan, 2.0],
+        'C': [0.0, 2.0, 1.0, 3.0, 2.0, 4.0, 0.0, np.nan, 4.0],
+    })
+    raw_cols = ['A', 'B', 'C']
+    ratio_cols = ['a', 'b', 'c']
+
+    def test_ratios_with_single_control(self):
+        ref_col = ['A']
+        result_df = quantification.add_ratios(self.df.copy(deep=True), self.raw_cols, self.ratio_cols, ref_col)
+        expected_df = pd.DataFrame({
+            'a': [np.nan, np.nan, 1.0, 1.0, 1.0, 1.0, 1.0,    1.0, np.nan],
+            'b': [np.nan, np.nan, 1.0, 2.0, 1.0, 2.0, 0.5, np.nan, np.nan],
+            'c': [np.nan, np.nan, 1.0, 3.0, 1.0, 2.0, 0.0, np.nan, np.nan],
+        })
+        pd.testing.assert_frame_equal(result_df[self.ratio_cols], expected_df)
+
+    def test_ratios_with_multiple_controls(self):
+        ref_col = ['A', 'B']
+        result_df = quantification.add_ratios(self.df.copy(deep=True), self.raw_cols, self.ratio_cols, ref_col)
+        expected_df = pd.DataFrame({
+            'a': [np.nan, 0.0, 1.0, 2/3, 1.0, 2/3, 4/3, 1.0, np.nan],
+            'b': [np.nan, 2.0, 1.0, 4/3, 1.0, 4/3, 2/3, np.nan, 1.0],
+            'c': [np.nan, 4.0, 1.0, 2.0, 1.0, 4/3, 0.0, np.nan, 2.0],
+        })
+        pd.testing.assert_frame_equal(result_df[self.ratio_cols], expected_df)
+
+
 class TestBuildInterpolationPoints:
     pass
 

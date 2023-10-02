@@ -128,12 +128,19 @@ def error(msg, end='\n\n\n\n'):
     """
     prints a error message to the terminal and logging file
     """
-    error_line = "\n" + 27 * '#' + ' ERROR ' + 27 * '#' + "\n\n"
-    msg = f'{TerminalFormatting.WARNING}{error_line}{msg}{TerminalFormatting.ENDC}'
+    error_line = "\n" + 32 * '#' + ' ERROR ' + 31 * '#' + "\n\n"
+    msg = f'{TerminalFormatting.FAIL}{error_line}{msg}{TerminalFormatting.ENDC}'
     if LOGGER:
         LOGGER.error(msg)
     else:
         print(msg, end=end)
+
+
+def is_toml_file(file_path):
+    """
+    Checks if the file_path leads to a toml file
+    """
+    return os.path.splitext(file_path)[-1].lower().endswith('.toml')
 
 
 def check_path(path, is_dir=False):
@@ -197,9 +204,9 @@ def check_toml_params(config):
         #
         # ['Experiment']
         #
-        experiments = config['Experiment']['experiments']
-        control_experiment = config['Experiment']['control_experiment']
-        doses = config['Experiment']['doses']
+        experiments = np.array(config['Experiment']['experiments'])
+        control_experiment = np.array([config['Experiment']['control_experiment']]).flatten()
+        doses = np.array(config['Experiment']['doses'])
         dose_scale = config['Experiment']['dose_scale']
         dose_unit = config['Experiment']['dose_unit']
 
@@ -209,8 +216,8 @@ def check_toml_params(config):
         if len(experiments) != len(doses):
             error("Error: [Experiment] 'experiments' and [Experiment] 'doses' do no correspond in length.")
             raise ValueError("[Experiment] 'experiments' & 'doses' length")
-        if control_experiment not in experiments:
-            error("Error: [Experiment] 'control_experiment' is not in [Experiment] 'experiments'.")
+        if len(set(control_experiment) - set(experiments)) > 0:
+            error("Error: [Experiment] at least one 'control_experiment' is not in [Experiment] 'experiments'.")
             raise ValueError("[Experiment] 'experiments'")
         if not dose_scale:
             error("Error: [Experiment] 'dose_scale' is empty.")
@@ -303,10 +310,15 @@ def set_default_values(config):
     """
     Sets default values for optional parameters of the pipeline when the user didn't specify it.
     """
-    experiments = config['Experiment']['experiments']
+    experiments = np.array(config['Experiment']['experiments']).flatten()
+    control_experiments = np.array([config['Experiment']['control_experiment']]).flatten()
+    doses = np.array([config['Experiment']['doses']]).flatten()
 
     # Experiment
     exp_params = config['Experiment']
+    exp_params['experiments'] = experiments
+    exp_params['control_experiment'] = control_experiments
+    exp_params['doses'] = doses
     exp_params['dose_scale'] = float(exp_params.get('dose_scale', 1e0))
     config['Experiment'] = exp_params
 

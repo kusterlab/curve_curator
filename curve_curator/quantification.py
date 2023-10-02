@@ -49,8 +49,8 @@ def get_imputation_value(df, col, pct=0.005):
     ----------
     df : pd.DataFrame
         A data frame containing at least col name.
-    col : str
-        column name in the df with values from which a good imputation value is drawn.
+    col : array-like of str
+        A array-like object of column name(s) in the df with values from which a good imputation value is drawn.
     pct : float, optional
         Percentile threshold which is used to find a good value for imputation. By default 0.005.
 
@@ -59,7 +59,7 @@ def get_imputation_value(df, col, pct=0.005):
     value : float
         imputation value.
     """
-    value = df[col].replace(0, np.nan).dropna().quantile(pct)
+    value = df[col].mean(axis=1).replace(0, np.nan).dropna().quantile(pct)
     return value
 
 
@@ -132,10 +132,11 @@ def normalize_values(df, raw_cols, norm_cols, ref_col=None):
     return df, normalization_factors
 
 
-def add_ratios(df, cols, ratio_cols, ref_col):
+def add_ratios(df, cols, ratio_cols, ref_cols):
     """
     Calculate ratios of cols / ref_col.
     The ratio values will be added to the df under the name of ratio_cols.
+    In case of multiple columns the mean of ref_cols is used to calculate ratios.
 
     Parameters
     ----------
@@ -145,15 +146,15 @@ def add_ratios(df, cols, ratio_cols, ref_col):
         A array-like object containing the column labels of the data.
     ratio_cols : array-like
         A array-like object containing the column labels of the future ratio data.
-    ref_col : string
-        A string indicating a column used as a reference for ratio calculations.
+    ref_cols : array-like
+        A array-like object of strings indicating one or multiple column(s) used as a reference for ratio calculations.
 
     Returns
     -------
     df : pd.DataFrame
         The result data frame with the added ratio_cols.
     """
-    df[ratio_cols] = df[cols].div(df[ref_col], axis=0).replace([np.inf], np.nan)
+    df[ratio_cols] = df[cols].div(df[ref_cols].mean(axis=1), axis=0).replace([np.inf], np.nan)
     return df
 
 
@@ -213,7 +214,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     M0 : MeanModel object
         An MeanModel instance from curve_curator.models.
     M1 : LogisticModel object
-        An LogisitcModel instance from curve_curator.models.
+        An LogisticModel instance from curve_curator.models.
     fit_params : dict
         parameter dictionary which adjust the specific fitting procedures. Must contain at least the fit speed and fit type.
     f_statistic_params : dict
@@ -389,17 +390,19 @@ def run_pipeline(df, config, decoy_mode=False):
     """
     # Load parameters from toml file
     experiments = np.array(config['Experiment']['experiments'])
+    control_experiments = np.array(config['Experiment']['control_experiment'])
     drug_concs = np.array(config['Experiment']['doses'])
-    drug_scale = config['Experiment']['dose_scale']
-    control_mask = (drug_concs != 0)
+    drug_scale = float(config['Experiment']['dose_scale'])
+    control_mask = (drug_concs != 0.0)
     drug_log_concs = tool.build_drug_log_concentrations(drug_concs[control_mask], drug_scale)
 
     # build the new column names based on experiment numbers
     cols_raw = tool.build_col_names('Raw {}', experiments)
+    col_raw_control = tool.build_col_names('Raw {}', control_experiments) #f"Raw {config['Experiment']['control_experiment']}"
     cols_normal = tool.build_col_names('Normalized {}', experiments)
+    col_normal_control = tool.build_col_names('Normalized {}', control_experiments) #f"Normalized {config['Experiment']['control_experiment']}"
     cols_ratio = tool.build_col_names('Ratio {}', experiments)
-    col_raw_control = f"Raw {config['Experiment']['control_experiment']}"
-    col_normal_control = f"Normalized {config['Experiment']['control_experiment']}"
+    col_ratio_control = tool.build_col_names('Ratio {}', control_experiments)
 
     # Setup the curve fit with default values unless specified in the toml file
     proc_params = config['Processing']
@@ -434,8 +437,12 @@ def run_pipeline(df, config, decoy_mode=False):
     else:
         df = add_ratios(df, cols_raw, cols_ratio, col_raw_control)
 
-    # Signal Quality is the raw intensity in the control
-    df['Signal Quality'] = np.log2(df[col_raw_control])
+    # If multiple controls are provided, estimate the noise level in the controls alone
+    if len(col_raw_control) > 1:
+        df['Control Ratio Std'] = df[col_ratio_control].std(axis=1)
+
+    # Absolute signal quality is the raw intensity ot the control(s)
+    df['Signal Quality'] = np.log2(df[col_raw_control].mean(axis=1))
 
     # Sort concentrations and observations from low to high dose
     sorted_doses = np.argsort(drug_log_concs)

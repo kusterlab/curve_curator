@@ -22,8 +22,7 @@ from . import dashboard
 from . import quality_control
 from .__init__ import __version__
 
-
-def main():
+if __name__ == '__main__':
     # Build a command line parser for parsing multiple config files
     command_line = argparse.ArgumentParser(
         description='CurveCurator',
@@ -52,7 +51,7 @@ def main():
         dest="path",
         metavar="<PATH>",
         type=str,
-        help="Relative path to the config.toml or batch.txt file to run the pipeline.")
+        help="Relative path to the config.toml file to run the pipeline.")
 
     # Parse the terminal arguments
     args = command_line.parse_args()
@@ -77,9 +76,17 @@ def main():
         ui.setup_logger(Path(tf).parent, name=i)
         ui.message(f' * Executing CurveCurator pipeline version {__version__}.')
 
-        # Load config
+        # Make a counter in batch mode only for the terminal
         if args.batch:
             ui.message(f' * Processing {i+1} of {len(toml_files)} data sets.', terminal_only=True)
+
+        # Check the input file is a toml file
+        if not ui.is_toml_file(tf):
+            ui.error(f' * The given file is not a TOML parameter file !\n * If it\'s a batch file make sure you activate the batch mode with --batch.')
+            ui.doneline()
+            continue
+
+        # Load config
         config = ui.load_toml(tf, random_mode=bool(args.random))
         config = ui.set_default_values(config)
 
@@ -112,7 +119,3 @@ def main():
 
         # Done
         ui.doneline()
-
-
-if __name__ == '__main__':
-    main()

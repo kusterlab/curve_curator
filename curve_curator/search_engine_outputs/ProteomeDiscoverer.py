@@ -32,8 +32,13 @@ class PDMap:
 
     @staticmethod
     def create_mod_sequence(df):
+        # Remove flanking sequences if present
+        flanking_mask = df['Modified sequence'].str.match(r'\[.+\]\..+.\.\[.+\]')
+        df.loc[flanking_mask, 'Modified sequence'] = df.loc[flanking_mask, 'Modified sequence'].str.split('.', expand=True)[1]
+        df['Modified sequence'] = df['Modified sequence'].str.upper()
+
+        # transform known modifications and report unknown ones to the user
         unknown_mods = set()
-        df['Modified sequence'] = df['Modified sequence'].str.split('.', expand=True)[1].str.upper()
         df['Modifications dict'] = df['Modifications'].apply(to_pos_dict, unknown_mods=unknown_mods)
         df['Modified sequence'] = df[['Modified sequence', 'Modifications dict']].apply(to_mod_seq, axis=1)
         df.drop(columns=['Modifications dict'], inplace=True)

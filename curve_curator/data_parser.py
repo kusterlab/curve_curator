@@ -27,6 +27,7 @@ def clean_modified_sequence(mod_seq):
     """
     mappings = {
         r'_': '',
+        r'\(\)': '',
         r'\(Acetyl \(Protein N-term\)\)':  '(ac)',
         r'M\(Oxidation \(M\)\)': 'M',
         r'M\(ox\)': 'M',

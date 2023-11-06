@@ -1,4 +1,5 @@
 
+
 [![DOI](https://img.shields.io/badge/DOI%20-%202023.08.07.552260v1%20-be2635?link=https%3A%2F%2Fdoi.org%2F10.1101%2F2023.08.07.552260%20)](https://www.biorxiv.org/content/10.1101/2023.08.07.552260v1)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8399823.svg)](https://doi.org/10.5281/zenodo.8399823)
 [![PyPI version](https://badge.fury.io/py/curve-curator.svg)](https://badge.fury.io/py/curve-curator)
@@ -62,13 +63,16 @@ If you want to update CurveCurator to the latest version after you have installe
 
 #### 1. Prepare the raw data
 
+
 For Viability data, create a txt file (tab separated) containing a "Name" column used as a sample identifier and Raw value, which can be intensities or ratios.
 
 For proteomics data, use the search engine of your choice and specify it in the toml file. 
-Also, specify if it is peptide or protein data. Please search each dose-dependent experiment separately. 
-Name your experiments 1..N in the search engine. For TMT this is already done by most search engines. 
+Also, you must specify if it is peptide or protein data. Please search each dose-dependent experiment (one condition e.g. a single drug) separately. 
+Name your experiments 1..N in the search engine. For TMT this is already done by most search engines.
+For MAXQUANT, use the protein.txt file for protein-based analysis and the evidence.txt for peptide-based analysis. 
 For DIANN, it outputs raw file names as columns. Please rename manually to Raw 1..N.
 For PD, the order of the files is important. PD normally labels the output experiments with F1..N. These numbers will be parsed by the CurveCurator. Please make sure that toml file has the same N to dose correspondences. 
+For MSFRAGGER, name your TMT channels or LFQ experiments Raw_1...N. The peptide-based analysis expects the (combined_)ion.tsv file. The protein-based analysis expects the (combined_)protein.tsv file.
 
 #### 2. Fill out the parameter toml-file for each dataset
 Each dataset comes with a parameter file in toml format. This file contains all necessary information for each experiment / raw input as well as optional parameters so that users can adjust the pipeline specifically to an experiment. The toml syntax primarily consists of `key = value` pairs, `[section names]`, and `#` (for comments). Example toml files, including extensive comments, are available. Common problems with the parameter file usually concern false formatting. Make sure strings have complete quotation marks. Lists are homogeneous in type, meaning that float and integers cannot be mixed, and that all elements are correctly separated by a comma. You don't need to specify all parameters all the time. Only specify parameters that differ from default behavior or are obligatory for the pipeline.
@@ -84,7 +88,7 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 	- ***`control_experiment`*** specifies the experiment name(s) that contains the control (= 0.0 dose(s)). If there is a single control, specify the name. If multiple controls exist in the data, specify an array of controls, e.g. [1, 2, 3] for three control replicates with names 1, 2, and 3. Importantly, the names must match the id names in the experiments array.
 	- `measurement_type` (proteomic data) can be 'LFQ', 'TMT', 'DIA', 'OTHER'.
 	- `data_type` (proteomic data) can be 'PEPTIDE', 'PROTEIN', 'OTHER'.
-	- `search_engine` (proteomic data) can be 'MAXQUANT', 'DIANN', 'PD', 'OTHER'.
+	- `search_engine` (proteomic data) can be 'MAXQUANT', 'DIANN', 'PD', 'MSFRAGGER', 'OTHER'.
 	- `search_engine_version` (proteomic data) specifies the used version. 
 
 - `['Paths']` contains all path information that is relevant for the IO of the pipeline. Please note that all paths are relative to the toml file, which is currently executed. As a best practice, we recommend storing everything in one folder next to each other, resulting in the most simple relative paths possible. The paths are provided as follows: `path = './<path>/<file_name>.<extension>'`. The only path that you always need to specify is the input_file containing the raw data. All other paths serve to optionally rename the files or put them to another location than the default location next to the toml file.

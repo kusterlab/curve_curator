@@ -295,10 +295,11 @@ def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_
     not_regulated_mask = (df['Null RMSE'] <= not_rmse_limit) & (np.log2(df['Null Model'])).between(*fc_range) #& (df['cut_col'] <= not_cut_limit)
 
     # Add labels
-    df['Curve Regulation'] = np.nan
+    df['Curve Regulation'] = ''
     df.loc[~p_mask & not_regulated_mask, 'Curve Regulation'] = 'not'
     df.loc[p_mask & effect_mask & up_mask, 'Curve Regulation'] = 'up'
     df.loc[p_mask & effect_mask & down_mask, 'Curve Regulation'] = 'down'
+    df['Curve Regulation'] = df['Curve Regulation'].replace('', np.nan)
 
     # Apply the min_signal filter by removing potential regulations that are below the min signal threshold.
     df.loc[df['Signal Quality'] <= quality_min, 'Curve Regulation'] = np.nan

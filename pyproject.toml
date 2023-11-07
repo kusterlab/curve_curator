@@ -1,21 +1,21 @@
 [tool.poetry]
 name = "curve_curator"
-version = "0.2.1"
+version = "0.3.0"
 description = "CurveCurator is an open-source analysis platform for any dose-dependent data. It fits a classical 4-parameter equation to estimate effect potency, effect size, and the statistical significance of the observed response. 2D-thresholding efficiently reduces false positives in high-throughput experiments and separates relevant from irrelevant or insignificant hits in an automated and unbiased manner. An interactive dashboard allows users to quickly explore data locally."
 authors = ["Florian P. Bayer <f.bayer@tum.de>"]
 license = "Apache License, Version 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-bokeh = "3.2"
-numpy = "^1.24.3"
-pandas = "^2.0.1"
+python = ">=3.9,<3.13"
+bokeh = "^3.3.0"
+numpy = "^1.25.0"
+pandas = "^2.1.2"
 scipy = "^1.10.1"
 statsmodels = "^0.14.0"
 toml = "^0.10.2"
-tqdm = "^4.65.0"
-pytest = "^7.3.1"
+tqdm = "^4.66.1"
+pytest = "^7.4.3"
 
 [tool.poetry.group.dev.dependencies]
 seaborn = "^0.12.2"
@@ -25,5 +25,5 @@ pytest-cov = "^4.1.0"
 CurveCurator = "curve_curator.__main__:main"
 
 [build-system]
-requires = ["poetry-core>=1.4.0"]
+requires = ["poetry-core>=1.6.0"]
 build-backend = "poetry.core.masonry.api"

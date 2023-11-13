@@ -216,9 +216,24 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     M1 : LogisticModel object
         An LogisticModel instance from curve_curator.models.
     fit_params : dict
-        parameter dictionary which adjust the specific fitting procedures. Must contain at least the fit speed and fit type.
+        Parameter dictionary which adjusts the specific fitting procedures.
+        It must contain at least the following key-value pairs:
+            type : {OLS, MLE}
+            speed : {fast, standard, extensive}
+            control_fold_change : {True, False}
+        The following key-value pairs are optional:
+            weights : array-like with length equal to x_data and y_data
+            interpolation : {True, False}
+            x_interpolated : array-like, if interpolation is True
     f_statistic_params : dict
-        parameter dictionary which adjusts the specific statistic and p-value calculations. It must contain at least alpha and fc_lim.
+        Parameter dictionary which adjusts the specific fitting procedures.
+         It must contain at least the following key-value pairs:
+            optimized_dofs : {True, False}
+            scale : float
+            loc : float
+        The following key-value pairs are optional:
+            dfn : float
+            dfd : float
 
     Returns
     -------
@@ -251,7 +266,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         return 19 * (np.nan,)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
-    if fit_params['interpolation']:
+    if fit_params.get('interpolation', False):
         f_linear = interpolate.interp1d(x_data, y_data, kind='linear')
         x_linear = fit_params['x_interpolated']
         # Mask terminal missing values
@@ -344,9 +359,28 @@ def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
     x_data : array_like
         A array-like object containing the drug concentrations in log space.
     fit_params : dict
-        parameter dictionary which adjusts the specific fitting procedures. It must contain at least the fit speed and fit type.
+        Parameter dictionary which adjusts the specific fitting procedures.
+        It must contain at least the following key-value pairs:
+            type : {OLS, MLE}
+            speed : {fast, standard, extensive}
+            control_fold_change : {True, False}
+        The following key-value pairs are optional:
+            slope : 0 < float < 100
+            front : float
+            back : float
+            weights : array-like with length equal to x_data and y_data
+            interpolation : {True, False}
+            x_interpolated : array-like, if interpolation is True
+            max_iterations : int
     f_statistic_params : dict
-        parameter dictionary which adjusts the specific statistic and p-value calculations. It must contain at least alpha and fc_lim.
+        Parameter dictionary which adjusts the specific fitting procedures.
+         It must contain at least the following key-value pairs:
+            optimized_dofs : {True, False}
+            scale : float
+            loc : float
+        The following key-value pairs are optional:
+            dfn : float
+            dfd : float
 
     Returns
     -------

@@ -188,7 +188,7 @@ A: Not classified curves should be treated very carefully. In principle, there a
 
 Q: How to deal with replicated doses in one experiment?
 
-A: Curve curator can deal with replicated doses in principle. During the fitting, the curve will be fitted through all replicates simultaneously to find the best model. Replicated controls are currently not possible. If you have them, pick one of them to be the control or pre-process the data with your favorite strategy. If you have replicated measurements of the same doses (e.g. in proteomic data across fractionated samples resulting in multiple rows), these duplicated measurements are aggregated. 
+A: Curve curator can deal with replicated data. It is also possible to have only replicated controls and no replicates for the same doses. There are different possibilities for handling replicates in CurveCurator. 1) It's possible to get a single curve from replicated data where the replicated doses were aggregated to a single average point before the fitting. 2) It's possible to get a single curve with all replicated ratios being fitted simultaneously. In the dashboard, you are able to see all individual observations around the estimated curve. 3) It's possible to get an independent curve fit for each replicate experiment. Depending on the selected strategy 1-3, the data structure and the toml file need to be adapted accordingly. 
 
 Q: What is the Relevance Score?
 

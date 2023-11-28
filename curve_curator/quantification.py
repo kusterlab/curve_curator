@@ -87,7 +87,7 @@ def impute_nans(df, raw_cols, imputation_value, max_imputations):
         return ';'.join(map(lambda col_name: col_name.split(" ")[-1], row[row].index))
 
     # Define the imputation matrix
-    imputation_mask = df[raw_cols].isna()
+    imputation_mask = df[raw_cols].isna() | (df[raw_cols] < imputation_value)
     # Make some meta statistic
     df['Imputation N'] = imputation_mask.sum(axis=1)
     df['Imputation Position'] = imputation_mask.apply(lambda row: join_true_positions_from_index(row), axis=1)

@@ -436,9 +436,9 @@ def run_pipeline(df, config, decoy_mode=False):
 
     # build the new column names based on experiment numbers
     cols_raw = tool.build_col_names('Raw {}', experiments)
-    col_raw_control = tool.build_col_names('Raw {}', control_experiments) #f"Raw {config['Experiment']['control_experiment']}"
+    col_raw_control = tool.build_col_names('Raw {}', control_experiments)
     cols_normal = tool.build_col_names('Normalized {}', experiments)
-    col_normal_control = tool.build_col_names('Normalized {}', control_experiments) #f"Normalized {config['Experiment']['control_experiment']}"
+    col_normal_control = tool.build_col_names('Normalized {}', control_experiments)
     cols_ratio = tool.build_col_names('Ratio {}', experiments)
     col_ratio_control = tool.build_col_names('Ratio {}', control_experiments)
 
@@ -447,9 +447,9 @@ def run_pipeline(df, config, decoy_mode=False):
     fit_params = config['Curve Fit']
     f_statistic_params = config['F Statistic']
 
-    # Keep only rows with at least n observed intensity. Report filter effect to the user.
+    # Keep only rows with maximal n missing values excluding controls. Report filter effect to the user.
     k_rows_0 = len(df)
-    df = filter_nans(df, cols_raw, proc_params['max_missing'])
+    df = filter_nans(df, cols_raw[control_mask], proc_params['max_missing'])
     k_rows_1 = len(df)
     if not decoy_mode:
         ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because of >{proc_params['max_missing']} missing value(s).", end='\n')

@@ -32,7 +32,7 @@ input_file = './evidence.txt'						# Relative path to the input file holding the
 ['Processing']
 # Parameters for the data analysis pipeline
 #available_cores = 20							# <N> number of cores for parallelization.
-#max_missing = 4							# <N> number of measured intensities that are allowed to be 0 per curve.
+#max_missing = 4							# <N> number of measured intensities that are allowed to be missing per curve excluding controls.
 #imputation = true							# <true | false> impute missing values.
 #normalization = true							# <true | false> median centering of log-normalized values.
 

@@ -73,7 +73,7 @@ def build_col_names(col_name, iter_list):
     """
     Build the names for the reporter columns
     """
-    return [col_name.format(i) for i in iter_list]
+    return np.array([col_name.format(i) for i in iter_list])
 
 
 def roundup(x):

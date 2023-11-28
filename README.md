@@ -104,7 +104,7 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 	- `available_cores` number of cores for parallelized fitting. The default value is 1 core.
 	- `imputation` toggle if missing values should be imputed by a constant low value. This makes it very relevant for proteomic data, where missing values correlate with low abundance. If NANs are missing at random, don't set the toggle to true. The default is no imputation (=false).
 	- `imputation_pct` is the specified percentile used for imputation. The default value is 0.005 (=0.5% raw intensity percentile of the control distribution).
-	- `max_missing` number of maximally tolerated missing values. If an experiment has more than an accepted number of NANs, it is removed from the analysis. If imputation is activated, then this will also limit the maximal number of allowed imputations per experiment. The default behavior is retaining all experiments.
+	- `max_missing` number of maximally tolerated missing values per curve excluding the control(s). If an experiment has more than an accepted number of NANs, it is removed from the analysis. If imputation is activated, then this will also limit the maximal number of allowed imputations per experiment. The default behavior is retaining all experiments.
 	- `normalization` toggle if data should be globally normalized between experiments by a log-normal median-centric approach. This is important for proteomics data. The default behavior is not normalizing (=false).
 
 - `['Curve Fit']` contains all optional parameters that are related to the curve fitting procedure. For default behavior, nothing needs to be specified here.

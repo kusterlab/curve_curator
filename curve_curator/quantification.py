@@ -443,17 +443,21 @@ def run_pipeline(df, config, decoy_mode=False):
     fit_params = config['Curve Fit']
     f_statistic_params = config['F Statistic']
 
-    # Keep only rows with at least n observed intensity
+    # Keep only rows with at least n observed intensity. Report filter effect to the user.
     k_rows_0 = len(df)
     df = filter_nans(df, cols_raw, proc_params['max_missing'])
     k_rows_1 = len(df)
     if not decoy_mode:
-        ui.message(f" * {k_rows_0 - k_rows_1} Curves were removed because of >{proc_params['max_missing']} missing values.", end='\n')
+        ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because of >{proc_params['max_missing']} missing value(s).", end='\n')
+        if k_rows_1 == 0:
+            ui.error(f" * There is no curve left in the input data.", end='\n')
+            exit()
 
     # Imputation of missing values if requested
     if proc_params['imputation'] and not decoy_mode:
         imputation_value = get_imputation_value(df, col_raw_control, pct=proc_params['imputation_pct'])
         df = impute_nans(df, cols_raw, imputation_value, proc_params['max_missing'])
+        ui.message(f' * The following imputation value was used to fill NaNs: {round(imputation_value, 2)}', end='\n')
 
     # Normalize the data if requested
     if proc_params['normalization'] and not decoy_mode:
@@ -470,6 +474,16 @@ def run_pipeline(df, config, decoy_mode=False):
     # Else calculate the ratios based on raw values
     else:
         df = add_ratios(df, cols_raw, cols_ratio, col_raw_control)
+
+    # Filter rows where no ratios could be calculated because all controls were missing. Report filter effect to the user.
+    k_rows_0 = len(df)
+    df = filter_nans(df, col_ratio_control, max_missing=len(col_ratio_control)-1)
+    k_rows_1 = len(df)
+    if not decoy_mode:
+        ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because they had no valid control value(s).", end='\n')
+        if k_rows_1 == 0:
+            ui.error(f" * There is no curve left in the input data.", end='\n')
+            exit()
 
     # If multiple controls are provided, estimate the noise level in the controls alone
     if len(col_raw_control) > 1:

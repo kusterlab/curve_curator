@@ -347,14 +347,26 @@ def calculate_qvalue(df, sort_cols, sort_ascendings, decoy_col, q_col_name='Curv
     return df
 
 
+def get_dofs_silently(n, model, optimized):
+    """
+    Wrapper function to safely calculate dofs even in the event of AssertionError when too few data points per curve exist.
+    When assertion error is triggered return nan which will prevent calculation of an relevance score.
+    """
+    try:
+        return model.get_dofs(n, optimized=optimized)
+    except ValueError:
+        return np.nan, np.nan
+
+
 def apply_significance_thresholds(df, config):
     """
     main function. Do the thresholding based on the config file.
     """
     # Get parameter from toml file
     drug_doses = np.array(config['Experiment']['doses'])
-    n = (drug_doses > 0).sum() + 1  # 1 for control data point
-    cols_ratio = tool.build_col_names('Ratio {}', config['Experiment']['experiments'])
+    control_mask = (drug_doses > 0.0)
+    n = control_mask.sum() + 1  # 1 for control data point
+    cols_ratio = tool.build_col_names('Ratio {}', config['Experiment']['experiments'][control_mask])
     fc_lim = config['F Statistic']['fc_lim']
     alpha = config['F Statistic']['alpha']
     loc = config['F Statistic']['loc']
@@ -362,35 +374,40 @@ def apply_significance_thresholds(df, config):
     two_sided = config['F Statistic']['two_sided']
     optimized_dofs = config['F Statistic']['optimized_dofs']
 
-    # Setup the logistic model with correct degrees of freedom to calculate default s0
-    model = LogisticModel(slope=config['Curve Fit'].get('slope'), front=config['Curve Fit'].get('front'), back=config['Curve Fit'].get('back'))
-    dfn, dfd = model.get_dofs(n, optimized=optimized_dofs)
-    dfn, dfd = config['F Statistic'].get('dfn', dfn), config['F Statistic'].get('dfd', dfd)  # overwrites values if present in toml file
-    default_s0 = get_s0(fc_lim, alpha, dfn=dfn, dfd=dfd, two_sided=two_sided)
-
-    # S0 can be different between different curves when there are missing values in curves. Therefore the S0 calculation must be vectorized.
-    dofs = pd.DataFrame.from_records((n - df[cols_ratio].isna().sum(axis=1)).apply(model.get_dofs, optimized=optimized_dofs), columns=['dfn', 'dfd'])
-    dfn, dfd = config['F Statistic'].get('dfn', dofs['dfn']), config['F Statistic'].get('dfd', dofs['dfd'])
-    vector_s0 = get_s0(fc_lim, alpha, dfn=dfn, dfd=dfd, two_sided=two_sided)
-
     # Perform multiple testing correction and cut significant curves
     not_rmse_limit = config['F Statistic']['not_rmse_limit']
     not_p_limit = config['F Statistic']['not_p_limit']
     quality_min = config['F Statistic']['quality_min']
     multiple_testing_method = config['F Statistic']['mtc_method']
     log_alpha = -np.log10(alpha)
+
     if multiple_testing_method == 'sam':
         ui.message(' * Calculate Relevance Score and apply SAM user thresholds:')
+
+        # Setup the logistic model with correct degrees of freedom to calculate default s0
+        model = LogisticModel(slope=config['Curve Fit'].get('slope'), front=config['Curve Fit'].get('front'), back=config['Curve Fit'].get('back'))
+        dfn, dfd = model.get_dofs(n, optimized=optimized_dofs)
+        dfn, dfd = config['F Statistic'].get('dfn', dfn), config['F Statistic'].get('dfd', dfd)  # overwrites values if present in toml file
+        default_s0 = get_s0(fc_lim, alpha, dfn=dfn, dfd=dfd, two_sided=two_sided)
         ui.message(f'   alpha={alpha}, fc_lim={fc_lim}, s0={default_s0:.4f}', end='\n')
+
+        # S0 can be different between different curves when there are missing values in curves. Therefore the s0 calculation must be vectorized.
+        valid_values = n - df[cols_ratio].isna().sum(axis=1)
+        dofs = pd.DataFrame.from_records(valid_values.apply(get_dofs_silently, model=model, optimized=optimized_dofs), columns=['dfn', 'dfd'])
+        dfn, dfd = config['F Statistic'].get('dfn', dofs['dfn']), config['F Statistic'].get('dfd', dofs['dfd'])
+        vector_s0 = get_s0(fc_lim, alpha, dfn=dfn, dfd=dfd, two_sided=two_sided)
+
         # Correct F and p values using the SAM principle to control multiple testing
         df['Curve F_Value SAM Corrected'] = sam_correction(df['Curve F_Value'], df['Curve Fold Change'], s0=vector_s0)
         df['Curve Relevance Score'] = -np.log10(f_distribution.sf(df['Curve F_Value SAM Corrected'], dfn=dfn, dfd=dfd, scale=scale, loc=loc))
         df = define_regulated_curves(df, 'Curve Relevance Score', log_alpha, fc_lim, not_rmse_limit, not_p_limit, quality_min)
+
     else:
         ui.message(f' * Calculate adjusted p-values using the {multiple_testing_method} method:', end='\n')
         df['Curve P_Value adjusted'] = correct_pvalues(df['Curve P_Value'], alpha=alpha, method=multiple_testing_method)
         df['Curve Log P_Value adjusted'] = -np.log10(df['Curve P_Value adjusted'])
         df = define_regulated_curves(df, 'Curve Log P_Value adjusted', log_alpha, fc_lim, not_rmse_limit, not_p_limit, quality_min)
+
     return df
 
 

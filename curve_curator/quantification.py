@@ -104,6 +104,7 @@ def normalize_values(df, raw_cols, norm_cols, ref_col=None):
     """
     Median centric normalization of raw_cols using the rows of the reference only.
     The normalized values will be added to the df under the name of norm_cols.
+    Missing values in the raw_cols are conserved as NaNs in the norm_cols.
 
     Parameters
     ----------
@@ -124,11 +125,14 @@ def normalize_values(df, raw_cols, norm_cols, ref_col=None):
     normalization_factors : array-like
         The applied normalization factors.
     """
-    mask = df[ref_col] if ref_col else df.index
-    ref_medians = np.log2(df.loc[mask, raw_cols].replace(0, np.nan)).median()
+    ref_mask = df[ref_col] if ref_col else df.index
+    ref_medians = np.log2(df.loc[ref_mask, raw_cols].replace(0, np.nan)).median()
     normalization_factors = ref_medians.mean() - ref_medians
     df[norm_cols] = 2 ** (np.log2(df[raw_cols].replace(0, np.nan)) + normalization_factors)
     df[norm_cols] = df[norm_cols].replace([np.nan, -np.inf, np.inf], 0)
+    # Conserve the missing values from raw_cols
+    nan_mask = df[raw_cols].isna().copy().rename(columns=dict(zip(raw_cols, norm_cols)))
+    df[nan_mask] = np.nan
     return df, normalization_factors
 
 

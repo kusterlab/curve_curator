@@ -1,3 +1,4 @@
+![CurveCurator](logo.png)
 
 
 [![DOI](https://img.shields.io/badge/DOI%20-%202023.08.07.552260v1%20-be2635?link=https%3A%2F%2Fdoi.org%2F10.1101%2F2023.08.07.552260%20)](https://www.biorxiv.org/content/10.1101/2023.08.07.552260v1)

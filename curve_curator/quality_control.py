@@ -52,8 +52,8 @@ def mad_analysis(df, config):
     cols_fit = ['pEC50', 'Curve Slope', 'Curve Front', 'Curve Back']
 
     # Calculate the deviations with multiple cores and then the mad based on this
-    dev = tool.parallelize_dataframe(df[cols_ratio + cols_fit], n_cores, calc_deviations, drug_c=drug_log_concs, y_col_names=cols_ratio,
-                                     fit_col_names=cols_fit)
+    cols = np.concatenate([cols_ratio, cols_fit])
+    dev = tool.parallelize_dataframe(df[cols], n_cores, calc_deviations, drug_c=drug_log_concs, y_col_names=cols_ratio, fit_col_names=cols_fit)
     mad = dev.abs().median()
     mad.to_csv(out_path, sep='\t', header=False, float_format='%.4f')
     ui.message(' * MAD-Analysis found the following median absolute deviations:', end='\n')

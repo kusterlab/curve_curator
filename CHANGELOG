@@ -1,3 +1,7 @@
+v0.3.0
+- Add MSFragger parser
+- Minor improvements and fixes (#1, #2, #3)
+
 v0.2.1
 - Fix pip install
 

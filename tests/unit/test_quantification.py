@@ -56,8 +56,8 @@ class TestImputeNans:
             'B': [2.0, 6.0, 2.0, 8.0],
             'C': [9.0, 10.0, 2.0, 2.0],
             'D': [13.0, 14.0, 15.0, 16.0],
-            'Imputation N': [1, 0, 3, 1],
-            'Imputation Position': ['B', '', 'A;B;C', 'C'],
+            'Imputation N': [2, 0, 3, 1],
+            'Imputation Position': ['A;B', '', 'A;B;C', 'C'],
         })
         pd.testing.assert_frame_equal(result, expected)
 

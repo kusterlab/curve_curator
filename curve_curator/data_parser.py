@@ -10,6 +10,7 @@ import pandas as pd
 from .search_engine_outputs.MaxQuant import MaxQuantMap
 from .search_engine_outputs.DIANN import DiannMap
 from .search_engine_outputs.ProteomeDiscoverer import PDMap
+from .search_engine_outputs.MSFragger import FraggerMap
 from . import user_interface as ui
 
 
@@ -27,6 +28,7 @@ def clean_modified_sequence(mod_seq):
     """
     mappings = {
         r'_': '',
+        r'\(\)': '',
         r'\(Acetyl \(Protein N-term\)\)':  '(ac)',
         r'M\(Oxidation \(M\)\)': 'M',
         r'M\(ox\)': 'M',
@@ -237,6 +239,62 @@ def load_pd_lqf_proteins(path, version, unique_cols, sum_cols=[], first_cols=[],
 
 
 #
+# MSFragger
+#
+
+
+def load_fragger_tmt_peptides(path, version, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    Mapper = FraggerMap(version)
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    df.columns = Mapper.rename_general_columns(df.columns)
+    df.columns = Mapper.rename_tmt_columns(df.columns)
+    df = Mapper.create_mod_sequence(df)
+    df['Modified sequence'] = clean_modified_sequence(df['Modified sequence'])
+    df = clean_rows(df)
+    df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
+
+def load_fragger_tmt_proteins(path, version, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    Mapper = FraggerMap(version)
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    df.columns = Mapper.rename_general_columns(df.columns)
+    df.columns = Mapper.rename_tmt_columns(df.columns)
+    if 'Peptides' in df.columns:
+        df = df[df['Peptides'] >= 2]
+    df = clean_rows(df)
+    df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
+
+def load_fragger_lqf_peptides(path, version, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    Mapper = FraggerMap(version)
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    df.columns = Mapper.rename_general_columns(df.columns)
+    df.columns = Mapper.rename_lfq_columns(df.columns)
+    df = Mapper.create_mod_sequence(df)
+    df['Modified sequence'] = clean_modified_sequence(df['Modified sequence'])
+    df = clean_rows(df)
+    df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
+
+def load_fragger_lqf_proteins(path, version, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    Mapper = FraggerMap(version)
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    df.columns = Mapper.rename_general_columns(df.columns)
+    df.columns = Mapper.rename_lfq_columns(df.columns)
+    if 'Peptides' in df.columns:
+        df = df[df['Peptides'] >= 2]
+    df = clean_rows(df)
+    df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
+#
 # Generic
 #
 
@@ -293,6 +351,14 @@ def load(config):
             df['Name'] = df['Genes']
         return df
 
+    elif (measurement_type == 'LFQ') and (search_engine == 'MSFRAGGER') and (data_type == 'PROTEIN'):
+        unique_cols = ['Proteins', 'Genes']
+        sum_cols = raw_cols + ['Peptides']
+        df = load_fragger_lqf_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols)
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+        return df
+
     elif (measurement_type == 'LFQ') and (search_engine == 'MAXQUANT') and (data_type == 'PEPTIDE'):
         # TODO: make this to dictionary
         unique_cols = ['Modified sequence']
@@ -303,11 +369,31 @@ def load(config):
             df['Name'] = df['Genes']
         return df
 
+    elif (measurement_type == 'LFQ') and (search_engine == 'MSFRAGGER') and (data_type == 'PEPTIDE'):
+        # TODO: make this to dictionary
+        unique_cols = ['Modified sequence']
+        first_cols = ['Proteins', 'Genes']
+        max_cols = []
+        df = load_fragger_lqf_peptides(path, search_engine_version, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols, max_cols=max_cols)
+        if 'Genes' not in df.columns:
+            df['Genes'] = df['Proteins']
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+        return df
+
     elif (measurement_type == 'TMT') and (search_engine == 'MAXQUANT') and (data_type == 'PROTEIN'):
         unique_cols = ['Proteins', 'Genes']
         max_cols = ['Score']
         sum_cols = raw_cols + ['Peptides']
         df = load_mq_tmt_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols, max_cols=max_cols)
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+        return df
+
+    elif (measurement_type == 'TMT') and (search_engine == 'MSFRAGGER') and (data_type == 'PROTEIN'):
+        unique_cols = ['Proteins', 'Genes']
+        sum_cols = raw_cols + ['Peptides']
+        df = load_fragger_tmt_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
         return df
@@ -328,6 +414,18 @@ def load(config):
         first_cols = ['Proteins']
         max_cols = []
         df = load_pd_tmt_peptides(path, search_engine_version, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols, max_cols=max_cols)
+        if 'Genes' not in df.columns:
+            df['Genes'] = df['Proteins']
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+        return df
+
+    elif (measurement_type == 'TMT') and (search_engine == 'MSFRAGGER') and (data_type == 'PEPTIDE'):
+        # TODO: make this to dictionary
+        unique_cols = ['Modified sequence']
+        first_cols = ['Proteins', 'Genes']
+        max_cols = []
+        df = load_fragger_tmt_peptides(path, search_engine_version, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols, max_cols=max_cols)
         if 'Genes' not in df.columns:
             df['Genes'] = df['Proteins']
         if 'Name' not in df.columns:

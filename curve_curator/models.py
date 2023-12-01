@@ -1364,7 +1364,8 @@ class LogisticModel(_Model):
             return 1 / ((n-4)**4 / n + 4)
 
         # Make sure there is always enough data points for good DoF calculations.
-        assert n >= (self.n_parameter() + 1)
+        if n < (self.n_parameter() + 1):
+            raise ValueError('The value n needs to be bigger than the number of model parameters.')
 
         # Optimized degrees of freedom for 4-p model
         if optimized:

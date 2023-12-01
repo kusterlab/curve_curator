@@ -164,7 +164,7 @@ def get_decoys(df, config):
     empirical_noise = estimate_noise_distribution(df, cols=ratio_cols, x=drug_log_concs)
     n = int(decoy_ratio * len(empirical_noise))
     if n < 1e4:
-        ui.warning(f' * Less then 1k decoys may result in inaccurate FDR estimations. Consider increasing the decoy_ratio parameter.')
+        ui.warning(f' * Less then 10k decoys may result in inaccurate FDR estimations. Consider increasing the decoy_ratio parameter.')
 
     # Simulate curves
     ui.message(f' * Simulating {n} decoys based on target noise distribution:')

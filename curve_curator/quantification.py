@@ -87,7 +87,7 @@ def impute_nans(df, raw_cols, imputation_value, max_imputations):
         return ';'.join(map(lambda col_name: col_name.split(" ")[-1], row[row].index))
 
     # Define the imputation matrix
-    imputation_mask = df[raw_cols].isna()
+    imputation_mask = df[raw_cols].isna() | (df[raw_cols] < imputation_value)
     # Make some meta statistic
     df['Imputation N'] = imputation_mask.sum(axis=1)
     df['Imputation Position'] = imputation_mask.apply(lambda row: join_true_positions_from_index(row), axis=1)
@@ -104,6 +104,7 @@ def normalize_values(df, raw_cols, norm_cols, ref_col=None):
     """
     Median centric normalization of raw_cols using the rows of the reference only.
     The normalized values will be added to the df under the name of norm_cols.
+    Missing values in the raw_cols are conserved as NaNs in the norm_cols.
 
     Parameters
     ----------
@@ -124,11 +125,14 @@ def normalize_values(df, raw_cols, norm_cols, ref_col=None):
     normalization_factors : array-like
         The applied normalization factors.
     """
-    mask = df[ref_col] if ref_col else df.index
-    ref_medians = np.log2(df.loc[mask, raw_cols].replace(0, np.nan)).median()
+    ref_mask = df[ref_col] if ref_col else df.index
+    ref_medians = np.log2(df.loc[ref_mask, raw_cols].replace(0, np.nan)).median()
     normalization_factors = ref_medians.mean() - ref_medians
     df[norm_cols] = 2 ** (np.log2(df[raw_cols].replace(0, np.nan)) + normalization_factors)
     df[norm_cols] = df[norm_cols].replace([np.nan, -np.inf, np.inf], 0)
+    # Conserve the missing values from raw_cols
+    nan_mask = df[raw_cols].isna().copy().rename(columns=dict(zip(raw_cols, norm_cols)))
+    df[nan_mask] = np.nan
     return df, normalization_factors
 
 
@@ -216,9 +220,24 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     M1 : LogisticModel object
         An LogisticModel instance from curve_curator.models.
     fit_params : dict
-        parameter dictionary which adjust the specific fitting procedures. Must contain at least the fit speed and fit type.
+        Parameter dictionary which adjusts the specific fitting procedures.
+        It must contain at least the following key-value pairs:
+            type : {OLS, MLE}
+            speed : {fast, standard, extensive}
+            control_fold_change : {True, False}
+        The following key-value pairs are optional:
+            weights : array-like with length equal to x_data and y_data
+            interpolation : {True, False}
+            x_interpolated : array-like, if interpolation is True
     f_statistic_params : dict
-        parameter dictionary which adjusts the specific statistic and p-value calculations. It must contain at least alpha and fc_lim.
+        Parameter dictionary which adjusts the specific fitting procedures.
+         It must contain at least the following key-value pairs:
+            optimized_dofs : {True, False}
+            scale : float
+            loc : float
+        The following key-value pairs are optional:
+            dfn : float
+            dfd : float
 
     Returns
     -------
@@ -251,7 +270,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         return 19 * (np.nan,)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
-    if fit_params['interpolation']:
+    if fit_params.get('interpolation', False):
         f_linear = interpolate.interp1d(x_data, y_data, kind='linear')
         x_linear = fit_params['x_interpolated']
         # Mask terminal missing values
@@ -344,9 +363,28 @@ def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
     x_data : array_like
         A array-like object containing the drug concentrations in log space.
     fit_params : dict
-        parameter dictionary which adjusts the specific fitting procedures. It must contain at least the fit speed and fit type.
+        Parameter dictionary which adjusts the specific fitting procedures.
+        It must contain at least the following key-value pairs:
+            type : {OLS, MLE}
+            speed : {fast, standard, extensive}
+            control_fold_change : {True, False}
+        The following key-value pairs are optional:
+            slope : 0 < float < 100
+            front : float
+            back : float
+            weights : array-like with length equal to x_data and y_data
+            interpolation : {True, False}
+            x_interpolated : array-like, if interpolation is True
+            max_iterations : int
     f_statistic_params : dict
-        parameter dictionary which adjusts the specific statistic and p-value calculations. It must contain at least alpha and fc_lim.
+        Parameter dictionary which adjusts the specific fitting procedures.
+         It must contain at least the following key-value pairs:
+            optimized_dofs : {True, False}
+            scale : float
+            loc : float
+        The following key-value pairs are optional:
+            dfn : float
+            dfd : float
 
     Returns
     -------
@@ -398,9 +436,9 @@ def run_pipeline(df, config, decoy_mode=False):
 
     # build the new column names based on experiment numbers
     cols_raw = tool.build_col_names('Raw {}', experiments)
-    col_raw_control = tool.build_col_names('Raw {}', control_experiments) #f"Raw {config['Experiment']['control_experiment']}"
+    col_raw_control = tool.build_col_names('Raw {}', control_experiments)
     cols_normal = tool.build_col_names('Normalized {}', experiments)
-    col_normal_control = tool.build_col_names('Normalized {}', control_experiments) #f"Normalized {config['Experiment']['control_experiment']}"
+    col_normal_control = tool.build_col_names('Normalized {}', control_experiments)
     cols_ratio = tool.build_col_names('Ratio {}', experiments)
     col_ratio_control = tool.build_col_names('Ratio {}', control_experiments)
 
@@ -409,17 +447,21 @@ def run_pipeline(df, config, decoy_mode=False):
     fit_params = config['Curve Fit']
     f_statistic_params = config['F Statistic']
 
-    # Keep only rows with at least n observed intensity
+    # Keep only rows with maximal n missing values excluding controls. Report filter effect to the user.
     k_rows_0 = len(df)
-    df = filter_nans(df, cols_raw, proc_params['max_missing'])
+    df = filter_nans(df, cols_raw[control_mask], proc_params['max_missing'])
     k_rows_1 = len(df)
     if not decoy_mode:
-        ui.message(f" * {k_rows_0 - k_rows_1} Curves were removed because of >{proc_params['max_missing']} missing values.", end='\n')
+        ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because of >{proc_params['max_missing']} missing value(s).", end='\n')
+        if k_rows_1 == 0:
+            ui.error(f" * There is no curve left in the input data.", end='\n')
+            exit()
 
     # Imputation of missing values if requested
     if proc_params['imputation'] and not decoy_mode:
         imputation_value = get_imputation_value(df, col_raw_control, pct=proc_params['imputation_pct'])
         df = impute_nans(df, cols_raw, imputation_value, proc_params['max_missing'])
+        ui.message(f' * The following imputation value was used to fill NaNs: {round(imputation_value, 2)}', end='\n')
 
     # Normalize the data if requested
     if proc_params['normalization'] and not decoy_mode:
@@ -436,6 +478,16 @@ def run_pipeline(df, config, decoy_mode=False):
     # Else calculate the ratios based on raw values
     else:
         df = add_ratios(df, cols_raw, cols_ratio, col_raw_control)
+
+    # Filter rows where no ratios could be calculated because all controls were missing. Report filter effect to the user.
+    k_rows_0 = len(df)
+    df = filter_nans(df, col_ratio_control, max_missing=len(col_ratio_control)-1)
+    k_rows_1 = len(df)
+    if not decoy_mode:
+        ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because they had no valid control value(s).", end='\n')
+        if k_rows_1 == 0:
+            ui.error(f" * There is no curve left in the input data.", end='\n')
+            exit()
 
     # If multiple controls are provided, estimate the noise level in the controls alone
     if len(col_raw_control) > 1:

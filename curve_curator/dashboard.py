@@ -1178,7 +1178,8 @@ def render(df, config):
     volcano_params['x_range'] = (-fc_max, fc_max)
 
     # Render the dashboard
-    dashboard(df[df_cols + cols_ratio], title, out_path, drug_concs, drug_unit, cols_ratio, model, config['F Statistic'], config['Dashboard'],
+    cols = np.concatenate([df_cols, cols_ratio])
+    dashboard(df[cols], title, out_path, drug_concs, drug_unit, cols_ratio, model, config['F Statistic'], config['Dashboard'],
               volcano_params=volcano_params, signal_slider_params=signal_slider_params, score_slider_params=score_slider_params,
               pec50_slider_params=pec50_slider_params, plot_scores=plot_scores, plot_signal=plot_signal)
 

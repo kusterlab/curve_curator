@@ -1,6 +1,6 @@
 2023-11-07 18:38:48,703 - INFO -  * Executing CurveCurator pipeline version 0.3.0.
 2023-11-07 18:38:48,703 - INFO -  * Reading parameter file of experiment.
-2023-11-07 18:38:48,752 - INFO -  * Loading data file Z:\internal_projects\active\TOPAS\Publications\DecryptM_Finder\GitHubUpload\curve_curator\example_datasets\decryptM_Dasatinib\./evidence.txt.
+2023-11-07 18:38:48,752 - INFO -  * Loading data file ./evidence.txt.
 2023-11-07 18:38:49,792 - INFO -  * 67 Curves were removed because of >4 missing values.
 2023-11-07 18:38:51,048 - INFO -  * The following normalization factors were applied:
 2023-11-07 18:38:51,048 - INFO - {'Raw 1': 0.58, 'Raw 2': 0.13, 'Raw 3': 0.2, 'Raw 4': -0.61, 'Raw 5': -0.31, 'Raw 6': 0.19, 'Raw 7': 0.24, 'Raw 8': -0.19, 'Raw 9': -0.08, 'Raw 10': -0.15}

@@ -1,0 +1,44 @@
+['Meta']
+# Sample information
+id = 'CTRP'								# Unique dataset identifier.
+description = 'CTRPv2 Cell viability data - 40uM Subset'		# Short description about the experiment.	
+condition = 'N/A'							# The condition that was tested. e.g. molecule name.
+treatment_time = '3 d'							# treatment time.
+
+['Experiment']
+# Experiment information
+experiments = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]				# The experiment ids within a experiments
+doses = [0.0, 0.0012, 0.0024, 0.0049, 0.0097, 0.019, 0.039, 0.078, 0.16, 0.31, 0.62, 1.2, 2.5, 5.0, 10.0, 20.0, 40.0]		# The doses corresponding to the channel indices
+dose_scale = '1e-6'							# The scaling factor for the doses in scientific notation
+dose_unit = 'M'								# The base unit of the doses
+control_experiment = 0							# <N> The index of the control channel to which ratios will be calculated
+measurement_type= 'OTHER'						# The measurement type <LFQ|TMT|DIA|OTHER>
+data_type = 'OTHER'							# The data type <PEPTIDE|PROTEIN|OTHER>
+search_engine = 'OTHER'							# The search engine <MAXQUANT|DIANN|OTHER>
+
+
+['Paths']
+# The paths needed for import. They must be relative to the toml files
+input_file = './dose_responses_40.0.tsv'				# Relative path to the imput file holding the data
+curves_file = './curves_40.0.txt'					# Relative path to the ouput file conting the curves
+decoys_file = './decoys_40.0.txt'					# Relative path to the ouput file conting the decoys
+fdr_file = './fdr_40.0.txt'						# Relative path to the ouput file conting the fdr output
+normalization_file = './normalization_factors_40.0.txt'			# Relative path to the file conting the normalization_factor for each experiment
+mad_file = './mad_40.0.txt'						# Relative path to the file conting the mad analysis for each experiment
+dashboard = './dashboard_40.0.html'					# Relative path to the interactive dashboard to explore the curves
+
+
+['Processing']
+# Paramters for the datanalysis pipeline
+available_cores = 5							# <N> number of cores for parallelization
+max_missing = 4								# <N> number of measured intensities that are allowed to be 0 per curve
+
+
+['Curve Fit']
+control_fold_change = true						# Calculate the foldchange relative to the control not the lowest dose
+interpolation = true							# Interpolate for a more smooth curve 	
+
+
+['F Statistic']
+alpha = 0.05								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis)
+fc_lim = 0.3								# Absolute Log2 Fold Change limit for a biologically meaningful curve (SAM-Analysis)

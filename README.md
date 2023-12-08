@@ -85,9 +85,10 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 
 	- ***`experiments`*** (array) is an id list containing the 1..N experiments names that are expected to be found in the data input file. Each name must be unique and exist in the data file. However, there can be more names in the data file than specified in the experiment array in the toml file. CurveCurator will only consider experiment columns specified here.
 	- ***`doses`*** (array) contain the drug doses in a consistent order to the experiments array in float notation. The control channel(s) get a concentration of 0.0. The dose array gets scaled by the dose_scale parameter internally. This makes it possible to conveniently insert concentrations, e.g. in the nanomolar range.
-	- ***`dose_scale`*** defines the unit prefix, and this gets multiplied with the doses array. For example, nano- is '1e-9', and micro- is '1e-6'. It's important to write it as a string in experimental notation or as float. 
+	- ***`dose_scale`*** defines the unit prefix, and this gets multiplied with the doses array. For example, nano- is '1e-9', and micro- is '1e-6'. It's important to write it as a string in experimental notation or as float.
+	- ***`dose_unit`*** the base unit of the doses and dose_scale. "M" for Molar is commonly used.
 	- ***`control_experiment`*** specifies the experiment name(s) that contains the control (= 0.0 dose(s)). If there is a single control, specify the name. If multiple controls exist in the data, specify an array of controls, e.g. [1, 2, 3] for three control replicates with names 1, 2, and 3. Importantly, the names must match the id names in the experiments array.
-	- `measurement_type` (proteomic data) can be 'LFQ', 'TMT', 'DIA', 'OTHER'.
+  	- `measurement_type` (proteomic data) can be 'LFQ', 'TMT', 'DIA', 'OTHER'.
 	- `data_type` (proteomic data) can be 'PEPTIDE', 'PROTEIN', 'OTHER'.
 	- `search_engine` (proteomic data) can be 'MAXQUANT', 'DIANN', 'PD', 'MSFRAGGER', 'OTHER'.
 	- `search_engine_version` (proteomic data) specifies the used version. 

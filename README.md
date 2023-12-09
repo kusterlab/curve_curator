@@ -12,6 +12,8 @@ CurveCurator is an open-source analysis platform for dose-dependent data sets. I
 
 For more information, we refer to the paper. Especially the supplementary notes contain many explanations and tips and tricks for your data analysis strategy, which is dependent on the specific data set that you obtained.
 
+If you used CurveCurator for your scientific work, please cite: Bayer et al. (2023), Nature Communications, 14(1), 7902.
+
 ## Installation:
 
 #### 1. Install the virtual environment manager anaconda to install CurveCurator and its dependencies safely.

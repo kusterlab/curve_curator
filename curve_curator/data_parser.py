@@ -89,6 +89,10 @@ def aggregate_duplicates(df, keys, sum_cols=[], first_cols=[], max_cols=[], min_
     -------
     df : pd.DataFrame
     """
+    # Double check that expected columns are present
+    ui.verify_columns_exist(df, columns=keys + sum_cols + first_cols + max_cols + min_cols + concat_cols)
+
+    # Create a group by objected that will be re-used a few times later
     grouped_df = df.groupby(keys)
 
     # Count & Sum the duplicates, then merge results to new_df

@@ -308,6 +308,16 @@ def load_toml(path, random_mode=False):
     return config
 
 
+def verify_columns_exist(df, columns):
+    """
+    Checks if all columns are present in the data frame. Else raises Error message and end the program.
+    """
+    for col in columns:
+        if col not in df:
+            error(f'The column "{col}" was not found in your data. Please fix your input data or the TOML file.', end='\n')
+            exit()
+
+
 def set_default_values(config):
     """
     Sets default values for optional parameters of the pipeline when the user didn't specify it.

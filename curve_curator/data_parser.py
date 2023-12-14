@@ -299,7 +299,24 @@ def load_fragger_lqf_proteins(path, version, unique_cols, sum_cols=[], first_col
 #
 
 
+def load_generic(path, unique_col, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    # Load
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    # A unique column is a requirement for generic upload
+    if unique_col not in df.columns:
+        raise ValueError(f'The input file must contain a <{unique_col}> column. Please add to the input file.')
+    df = aggregate_duplicates(df, keys=[unique_col], sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
+
 def load_generic_peptide_format(path):
+    # Load
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    return df
+
+
+def load_generic_protein_format(path):
     # Load
     df = pd.read_csv(path, sep='\t', low_memory=False)
     return df
@@ -442,7 +459,7 @@ def load(config):
         return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'OTHER') and (data_type == 'PROTEIN'):
-        df = load_generic_peptide_format(path)
+        df = load_generic_protein_format(path)
         if 'Name' not in df.columns:
             if 'Genes' in df.columns:
                 df['Name'] = df['Genes']
@@ -451,9 +468,8 @@ def load(config):
         return df
 
     elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'OTHER'):
-        df = load_generic_peptide_format(path)
-        if 'Name' not in df.columns:
-            raise ValueError('The input file must contain a Name column. Please add.')
+        unique_col = 'Name'
+        df = load_generic(path, unique_col=unique_col, sum_cols=raw_cols)
         return df
 
     else:

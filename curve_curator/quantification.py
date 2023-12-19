@@ -496,6 +496,19 @@ def run_pipeline(df, config, decoy_mode=False):
     # Absolute signal quality is the raw intensity ot the control(s)
     df['Signal Quality'] = np.log2(df[col_raw_control].mean(axis=1))
 
+    # Clip ratios if clipping is specified by the user
+    if proc_params['ratio_range'] is not None:
+        lower, upper = proc_params['ratio_range']
+        clipped_value = ((df[cols_ratio] < lower) | (df[cols_ratio] > upper)).sum().sum()
+        df[cols_ratio] = df[cols_ratio].clip(lower=lower, upper=upper)
+        ui.message(f" * {clipped_value} ratios were clipped into the range [{lower}, {upper}].", end='\n')
+
+    # Warn the user if negative values were detected or clip the values if requested
+    negative_count = (df[cols_ratio] < 0).sum().sum()
+    if negative_count > 0:
+        ui.warning(f" * {negative_count} negative ratios were detected in the data matrix. CurveCurator expects the y response ratios to be >= 0." +
+                   f"Models will be fit but will never go < 0. Please consider using the 'clip_ratios' parameter to confine the ratios into a defined range. e.g. (0, inf).", end='\n')
+
     # Sort concentrations and observations from low to high dose
     sorted_doses = np.argsort(drug_log_concs)
     drug_log_concs_sorted = drug_log_concs[sorted_doses]

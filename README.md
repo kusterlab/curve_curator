@@ -4,6 +4,7 @@
 [![DOI](https://img.shields.io/badge/Paper-10.1038%2Fs41467--023--43696--z-be2635?logo=Paper&link=https%3A%2F%2Fdoi.org%2F10.1038%2Fs41467-023-43696-z)](https://doi.org/10.1038/s41467-023-43696-z)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8399823.svg)](https://doi.org/10.5281/zenodo.8399823)
 [![PyPI version](https://badge.fury.io/py/curve-curator.svg)](https://badge.fury.io/py/curve-curator)
+![Python versions](https://img.shields.io/badge/python-3.11%20|%203.12-green)
 
 
 # CurveCurator

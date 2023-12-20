@@ -6,7 +6,7 @@
 
 import os
 import sys
-import toml
+import tomllib
 import numpy as np
 import logging
 import time
@@ -286,7 +286,8 @@ def load_toml(path, random_mode=False):
 
     # Check & load the toml file, and add the path variable to toml file
     check_path(path)
-    config = toml.load(path)
+    with open(path, "rb") as f:
+        config = tomllib.load(f)
     config['__file__'] = {'Path': path}
 
     # Check the parameter file values

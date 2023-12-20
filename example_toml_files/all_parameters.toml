@@ -35,7 +35,7 @@ input_file = './evidence.txt'						# Relative path to the input file holding the
 #max_missing = 4							# <N> number of measured intensities that are allowed to be missing per curve excluding controls.
 #imputation = true							# <true | false> impute missing values.
 #normalization = true							# <true | false> median centering of log-normalized values.
-#ratio_range = [0.0, 1e10]						# [<lower>, <upper>] The range of values the response ratios can have. A value outside the range will be clipped to the lower or upper boundary value.
+#ratio_range = [0.0, +inf]						# [<lower>, <upper>] The range of values the response ratios can have. A value outside the range will be clipped to the lower or upper boundary value.
 
 ['Curve Fit']
 #front = 1.0								# <N> This will fix the curve front to the value N. 

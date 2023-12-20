@@ -1,12 +1,14 @@
-2023-11-07 18:38:48,703 - INFO -  * Executing CurveCurator pipeline version 0.3.0.
-2023-11-07 18:38:48,703 - INFO -  * Reading parameter file of experiment.
-2023-11-07 18:38:48,752 - INFO -  * Loading data file ./evidence.txt.
-2023-11-07 18:38:49,792 - INFO -  * 67 Curves were removed because of >4 missing values.
-2023-11-07 18:38:51,048 - INFO -  * The following normalization factors were applied:
-2023-11-07 18:38:51,048 - INFO - {'Raw 1': 0.58, 'Raw 2': 0.13, 'Raw 3': 0.2, 'Raw 4': -0.61, 'Raw 5': -0.31, 'Raw 6': 0.19, 'Raw 7': 0.24, 'Raw 8': -0.19, 'Raw 9': -0.08, 'Raw 10': -0.15}
-2023-11-07 18:38:51,079 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
-2023-11-07 18:41:09,981 - INFO -  * Fitting curves parameters done !
-2023-11-07 18:41:10,106 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
-2023-11-07 18:41:10,106 - INFO -    alpha=0.05, fc_lim=0.45, s0=0.2141
-2023-11-07 18:41:12,224 - INFO -  * Rendering interactive dashboard using webgl backend ...
-2023-11-07 18:41:13,808 - INFO -  * Dashboard successfully rendered.
+2023-12-20 17:38:11,605 - INFO -  * Executing CurveCurator pipeline version 0.4.0.
+2023-12-20 17:38:11,605 - INFO -  * Reading parameter file of experiment.
+2023-12-20 17:38:11,637 - INFO -  * Loading data file ./evidence.txt.
+2023-12-20 17:38:13,017 - INFO -  * 64 curves were removed because of >4 missing value(s).
+2023-12-20 17:38:14,477 - INFO -  * The following imputation value was used to fill NaNs: 6329.66
+2023-12-20 17:38:14,571 - INFO -  * The following normalization factors were applied:
+2023-12-20 17:38:14,571 - INFO - {'Raw 1': 0.58, 'Raw 2': 0.13, 'Raw 3': 0.2, 'Raw 4': -0.6, 'Raw 5': -0.31, 'Raw 6': 0.19, 'Raw 7': 0.24, 'Raw 8': -0.19, 'Raw 9': -0.08, 'Raw 10': -0.14}
+2023-12-20 17:38:14,603 - INFO -  * 0 curves were removed because they had no valid control value(s).
+2023-12-20 17:38:14,618 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
+2023-12-20 17:41:06,150 - INFO -  * Fitting curves parameters done !
+2023-12-20 17:41:06,150 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
+2023-12-20 17:41:06,150 - INFO -    alpha=0.05, fc_lim=0.45, s0=0.2141
+2023-12-20 17:41:09,398 - INFO -  * Rendering interactive dashboard using webgl backend ...
+2023-12-20 17:41:10,779 - INFO -  * Dashboard successfully rendered.

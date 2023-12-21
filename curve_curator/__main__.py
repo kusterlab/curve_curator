@@ -7,7 +7,7 @@
 # usage:
 # python -m curve_curator [-h] [-r [RANDOM]] [-b] <PARAM PATH>
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 from pathlib import Path

@@ -1,7 +1,7 @@
 # data_simulator.py
 # Simulates random curves given the H0 is True meaning that x & y are independent.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 import numpy as np

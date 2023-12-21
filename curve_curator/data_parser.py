@@ -1,7 +1,7 @@
 # data_parser.py
 # Functions for harmonizing all sorts of input when reading in user data.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 import numpy as np

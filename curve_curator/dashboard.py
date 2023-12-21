@@ -1,7 +1,7 @@
 # dashboard.py
 # Data analysis platform based on interactive Bokeh plots with HTML/JS output.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 import numpy as np

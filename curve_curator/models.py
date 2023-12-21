@@ -1,7 +1,7 @@
 # models.py
 # Logistic & Mean Model classes
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 
@@ -18,7 +18,7 @@ from scipy.linalg import svd
 NOISE_LIMITS = (1e-5, 20)  # Variance Range of the Normal error
 PEC50_DELTA = 2  # Delta +/- pEC50 around the doses to define the boundary
 SLOPE_LIMITS = (0.01, 10)  # Slope Range
-Y_LIMITS = (1e-3, 1e6)  # Y-axis Range
+Y_LIMITS = (1e-4, 1e6)  # Y-axis Range
 
 
 class _Model:

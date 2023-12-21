@@ -1,7 +1,7 @@
 # quality_control.py
 # Quality control of the input data to identify potential systematic biases.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 # Imports:

@@ -1,7 +1,7 @@
 # user_interface.py
 # Functions related to cmd line outputs for better interaction with the user.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 import os

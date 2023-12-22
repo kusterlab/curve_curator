@@ -11,7 +11,7 @@
 
 CurveCurator is an open-source analysis platform for dose-dependent data sets. It fits a classical 4-parameter equation to estimate effect potency, effect size, and the statistical significance of the observed response. 2D-thresholding efficiently reduces false positives in high-throughput experiments and separates relevant from irrelevant or insignificant hits in an automated and unbiased manner. An interactive dashboard allows users to quickly explore data locally.
 
-For more information, we refer to the paper. Especially the supplementary notes contain many explanations and tips and tricks for your data analysis strategy, which is dependent on the specific data set that you obtained.
+For more information, we refer to the paper. Especially the supplementary notes contain many explanations and tips and tricks for your data analysis strategy, which is dependent on the specific data set that you obtained. You may also have a look at the example datasets (including replicate analyses) and the example toml files.
 
 If you used CurveCurator for your scientific work, please cite: Bayer et al. (2023), Nature Communications, 14(1), 7902.
 

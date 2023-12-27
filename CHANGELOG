@@ -1,3 +1,10 @@
+v0.4.0
+- Add more examples and improved documentation (#9)
+- Add clipping option to handle values outside the expected range (#11)
+- Change to tomllib standard library, which leads to python >= 3.11, but removes dependence on the toml package and gets the newest TOML syntax v1.0) (#12)
+- Fix handling of duplicate aggregation (#10, #13)
+- Minor improvements and fixes
+
 v0.3.0
 - Add MSFragger support
 - Better reports to the console & log file

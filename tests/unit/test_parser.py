@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from curve_curator.data_parser import clean_modified_sequence, clean_rows, aggregate_duplicates
 
 
@@ -86,12 +87,12 @@ class TestCleanRows:
 
 class TestAggregateDuplicates:
     df = pd.DataFrame({
-        'ID': [1, 1, 2, 2, 3],
-        'Value1': [10, 20, 30, 40, 50],
-        'Value2': [1, 2, 3, 4, 5],
-        'Category': ['A', 'B', 'C', 'C', 'A'],
-        'Name': ['A', 'A', 'B', 'B', 'C'],
-        'Boolean': [True, True, False, False, False],
+        'ID': [1, 1, 2, 2, 3, 4, 5, 5],
+        'Value1': [10, 20, 30, 40, 50, 0, np.nan, np.nan],
+        'Value2': [1, 2, 3, 4, 5, np.nan, 6, np.nan],
+        'Category': ['A', 'B', 'C', 'C', 'A', 'D', 'D', 'D'],
+        'Name': ['A', 'A', 'B', 'B', 'C', 'D', 'E', 'E'],
+        'Boolean': [True, True, False, False, False, False, False, False],
     })
     keys = ['ID']
     numeric_cols = ['Value1', 'Value2']
@@ -101,58 +102,58 @@ class TestAggregateDuplicates:
     def test_key_only(self):
         result = aggregate_duplicates(self.df, self.keys)
         expected_result = pd.DataFrame({
-            'ID': [1, 2, 3],
-            'N duplicates': [2, 2, 1],
+            'ID': [1, 2, 3, 4, 5],
+            'N duplicates': [2, 2, 1, 1, 2],
         })
         assert result.equals(expected_result)
 
     def test_sumcols(self):
         result = aggregate_duplicates(self.df, self.keys, sum_cols=self.numeric_cols)
         expected_result = pd.DataFrame({
-            'ID': [1, 2, 3],
-            'N duplicates': [2, 2, 1],
-            'Value1': [30, 70, 50],
-            'Value2': [3, 7, 5],
+            'ID': [1, 2, 3, 4, 5],
+            'N duplicates': [2, 2, 1, 1, 2],
+            'Value1': [30, 70, 50, 0, np.nan],
+            'Value2': [3, 7, 5, np.nan, 6],
         })
         assert result.equals(expected_result)
 
     def test_maxcols(self):
         result = aggregate_duplicates(self.df, self.keys, max_cols=self.numeric_cols)
         expected_result = pd.DataFrame({
-            'ID': [1, 2, 3],
-            'N duplicates': [2, 2, 1],
-            'Value1': [20, 40, 50],
-            'Value2': [2, 4, 5],
+            'ID': [1, 2, 3, 4, 5],
+            'N duplicates': [2, 2, 1, 1, 2],
+            'Value1': [20, 40, 50, 0, np.nan],
+            'Value2': [2, 4, 5, np.nan, 6],
         })
         assert result.equals(expected_result)
 
     def test_mincols(self):
         result = aggregate_duplicates(self.df, self.keys, min_cols=self.numeric_cols)
         expected_result = pd.DataFrame({
-            'ID': [1, 2, 3],
-            'N duplicates': [2, 2, 1],
-            'Value1': [10, 30, 50],
-            'Value2': [1, 3, 5],
+            'ID': [1, 2, 3, 4, 5],
+            'N duplicates': [2, 2, 1, 1, 2],
+            'Value1': [10, 30, 50, 0, np.nan],
+            'Value2': [1, 3, 5, np.nan, 6],
         })
         assert result.equals(expected_result)
 
     def test_firstcols(self):
         result = aggregate_duplicates(self.df, self.keys, first_cols=self.feature_cols)
         expected_result = pd.DataFrame({
-            'ID': [1, 2, 3],
-            'N duplicates': [2, 2, 1],
-            'Name': ['A', 'B', 'C'],
-            'Boolean': [True, False, False],
+            'ID': [1, 2, 3, 4, 5],
+            'N duplicates': [2, 2, 1, 1, 2],
+            'Name': ['A', 'B', 'C', 'D', 'E'],
+            'Boolean': [True, False, False, False, False],
         })
         assert result.equals(expected_result)
 
     def test_concatcols(self):
         result = aggregate_duplicates(self.df, self.keys, concat_cols=self.category_cols)
         expected_result = pd.DataFrame({
-            'ID': [1, 2, 3],
-            'N duplicates': [2, 2, 1],
-            'Category': ['A;B', 'C;C', 'A'],
-            'Name': ['A;A', 'B;B', 'C'],
-            'Boolean': ['True;True', 'False;False', 'False'],
+            'ID': [1, 2, 3, 4, 5],
+            'N duplicates': [2, 2, 1, 1, 2],
+            'Category': ['A;B', 'C;C', 'A', 'D', 'D;D'],
+            'Name': ['A;A', 'B;B', 'C', 'D', 'E;E'],
+            'Boolean': ['True;True', 'False;False', 'False', 'False', 'False;False'],
         })
         assert result.equals(expected_result)

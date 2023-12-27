@@ -1,0 +1,40 @@
+['Meta']
+# Sample information
+id = 'Sarcoma Viability'							# Unique dataset identifier.
+description = 'Sarcoma Viability Screen - individual replicates'	# Short description about the experiment.	
+condition = 'Diverse drugs and cell lines'					# The condition that was tested. e.g. molecule name.
+treatment_time = '3 days'							# treatment time.
+
+['Experiment']
+# Experiment information
+experiments = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]						# The experiment ids within a experiments
+doses = [0.00, 0.17, 0.51, 1.52, 4.57, 13.72, 41.15, 123.5, 370.4, 1111.0, 3333.0, 10000.0]	# The doses corresponding to the channel indices
+dose_scale = '1e-9'							# The scaling factor for the doses in scientific notation
+dose_unit = 'M'								# The base unit of the doses
+control_experiment = 0							# <N> The index of the control channel to which ratios will be calculated
+measurement_type= 'OTHER'						# The measurement type <LFQ|TMT|DIA|OTHER>
+data_type = 'OTHER'							# The data type <PEPTIDE|PROTEIN|OTHER>
+search_engine = 'OTHER'							# The search engine <MAXQUANT|DIANN|OTHER>
+
+['Paths']
+# The paths needed for import. They must be relative to the toml files
+input_file = './ratio_data.txt'						# Relative path to the imput file holding the data
+
+['Processing']
+# Paramters for the datanalysis pipeline
+available_cores = 5							# <N> number of cores for parallelization
+max_missing = 4								# <N> number of measured intensities that are allowed to be 0 per curve
+ratio_range = [0.0, +inf]						# [<lower>, <upper>] The range of values the response ratios can have. If a value is outsate the range it will be clipped to the lower or upper value.
+
+['Curve Fit']
+control_fold_change = true						# Calculate the foldchange relative to the control not the lowest dose
+interpolation = true							# Interpolate for a more smooth curve 	
+
+['F Statistic']
+optimized_dofs = true							# <true | false> Use the optimized degrees of freedom for correct p-value estimtion
+alpha = 0.05								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis)
+fc_lim = 0.25								# Absolute Log2 Fold Change limit for a biologically meaningful curve (SAM-Analysis)
+
+
+['Dashboard']
+backend = 'svg'								# <'webgl'|'svg'|'canvas'> Specifies the HTML output backend.

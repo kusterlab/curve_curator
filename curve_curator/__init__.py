@@ -2,7 +2,7 @@
 # Curve Curator #
 # ############# #
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'

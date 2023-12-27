@@ -7,7 +7,7 @@
 # usage:
 # python -m curve_curator [-h] [-r [RANDOM]] [-b] <PARAM PATH>
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 from pathlib import Path
@@ -112,7 +112,7 @@ def main():
             fdr = thresholding.estimate_fdr(data, decoys, config=config)
             decoys.to_csv(config['Paths']['decoys_file'], sep='\t', index=False)
 
-        # Identify significant curves
+        # Save curve file
         data.to_csv(config['Paths']['curves_file'], sep='\t', index=False)
 
         # Plot the data in the dashboard

@@ -1,7 +1,7 @@
 # data_parser.py
 # Functions for harmonizing all sorts of input when reading in user data.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 import numpy as np
@@ -89,11 +89,15 @@ def aggregate_duplicates(df, keys, sum_cols=[], first_cols=[], max_cols=[], min_
     -------
     df : pd.DataFrame
     """
+    # Double check that expected columns are present
+    ui.verify_columns_exist(df, columns=keys + sum_cols + first_cols + max_cols + min_cols + concat_cols)
+
+    # Create a group by objected that will be re-used a few times later
     grouped_df = df.groupby(keys)
 
     # Count & Sum the duplicates, then merge results to new_df
     grouped_count = grouped_df.size().to_frame().rename({0: 'N duplicates'}, axis=1)
-    grouped_sum = grouped_df[sum_cols].sum()
+    grouped_sum = grouped_df[sum_cols].sum(min_count=1)
     new_df = pd.merge(left=grouped_count, right=grouped_sum, left_index=True, right_index=True)
 
     # use the first element of the group
@@ -299,7 +303,24 @@ def load_fragger_lqf_proteins(path, version, unique_cols, sum_cols=[], first_col
 #
 
 
+def load_generic(path, unique_col, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    # Load
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    # A unique column is a requirement for generic upload
+    if unique_col not in df.columns:
+        raise ValueError(f'The input file must contain a <{unique_col}> column. Please add to the input file.')
+    df = aggregate_duplicates(df, keys=[unique_col], sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
+
 def load_generic_peptide_format(path):
+    # Load
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    return df
+
+
+def load_generic_protein_format(path):
     # Load
     df = pd.read_csv(path, sep='\t', low_memory=False)
     return df
@@ -442,7 +463,7 @@ def load(config):
         return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'OTHER') and (data_type == 'PROTEIN'):
-        df = load_generic_peptide_format(path)
+        df = load_generic_protein_format(path)
         if 'Name' not in df.columns:
             if 'Genes' in df.columns:
                 df['Name'] = df['Genes']
@@ -451,9 +472,8 @@ def load(config):
         return df
 
     elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'OTHER'):
-        df = load_generic_peptide_format(path)
-        if 'Name' not in df.columns:
-            raise ValueError('The input file must contain a Name column. Please add.')
+        unique_col = 'Name'
+        df = load_generic(path, unique_col=unique_col, sum_cols=raw_cols)
         return df
 
     else:

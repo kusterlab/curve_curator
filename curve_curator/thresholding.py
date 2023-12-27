@@ -1,7 +1,7 @@
 # thresholding.py
 # Apply SAM 2D thresholds to the dose-response curves to identify significant curves.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 from scipy.stats import f as f_distribution

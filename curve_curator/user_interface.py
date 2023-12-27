@@ -1,12 +1,12 @@
 # user_interface.py
 # Functions related to cmd line outputs for better interaction with the user.
 #
-# Florian P. Bayer - 2023
+# Florian P. Bayer - 2024
 #
 
 import os
 import sys
-import toml
+import tomllib
 import numpy as np
 import logging
 import time
@@ -77,12 +77,14 @@ def welcome():
     #########              #################              #########
              #             # Curve Curator #             #
               #            #################            #
-               0 pEC50                                 0 pEC50
+               0 pEC50                           pEC50 0 
                 #                                     #
                  #                                   #
                   #########                 #########
 
-                                               Florian P. Bayer - 2023"""
+                                               Florian P. Bayer - 2024
+    
+    Please cite CurveCurator: 10.1038/s41467-023-43696-z"""
     print(TerminalFormatting.OKCYAN + msg + TerminalFormatting.ENDC, end='\n\n')
 
 
@@ -284,7 +286,8 @@ def load_toml(path, random_mode=False):
 
     # Check & load the toml file, and add the path variable to toml file
     check_path(path)
-    config = toml.load(path)
+    with open(path, "rb") as f:
+        config = tomllib.load(f)
     config['__file__'] = {'Path': path}
 
     # Check the parameter file values
@@ -304,6 +307,16 @@ def load_toml(path, random_mode=False):
             error('Issue(s) with the toml file found!! The input file cannot be found! Please check.')
             exit()
     return config
+
+
+def verify_columns_exist(df, columns):
+    """
+    Checks if all columns are present in the data frame. Else raises Error message and end the program.
+    """
+    for col in columns:
+        if col not in df:
+            error(f'The column "{col}" was not found in your data. Please fix your input data or the TOML file.', end='\n')
+            exit()
 
 
 def set_default_values(config):
@@ -339,6 +352,7 @@ def set_default_values(config):
     proc_params['imputation_pct'] = float(proc_params.get('imputation_pct', 0.005))
     proc_params['normalization'] = bool(proc_params.get('normalization', False))
     proc_params['max_missing'] = int(proc_params.get('max_missing', len(experiments)))
+    proc_params['ratio_range'] = proc_params.get('ratio_range', None)
     config['Processing'] = proc_params
 
     # Curve Fit

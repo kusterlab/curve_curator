@@ -470,7 +470,7 @@ def run_pipeline(df, config, decoy_mode=False):
         if out_path:
             norm_factors.to_csv(out_path, sep='\t', header=False, float_format='%.4f')
         ui.message(' * The following normalization factors were applied:', end='\n')
-        ui.message(norm_factors.round(2).to_dict())
+        ui.message('   {}'.format(norm_factors.round(2).to_dict()))
 
         # Calculate the ratios based on normalized values
         df = add_ratios(df, cols_normal, cols_ratio, col_normal_control)
@@ -519,7 +519,7 @@ def run_pipeline(df, config, decoy_mode=False):
     if fit_params['interpolation']:
         fit_params['x_interpolated'] = build_interpolation_points(drug_log_concs_sorted)
         ui.message(' * Fit will use interpolation X values:', end='\n')
-        ui.message(list(map(lambda v: round(v, 2), fit_params['x_interpolated'])))
+        ui.message('   {}'.format(list(map(lambda v: round(v, 2), fit_params['x_interpolated']))))
 
     # Fit the logistic model using multiple cores and optional processing parameters
     n_cores = config['Processing']['available_cores']

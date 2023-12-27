@@ -82,7 +82,7 @@ def welcome():
                  #                                   #
                   #########                 #########
 
-                                               Florian P. Bayer - 2023
+                                               Florian P. Bayer - 2024
     
     Please cite CurveCurator: 10.1038/s41467-023-43696-z"""
     print(TerminalFormatting.OKCYAN + msg + TerminalFormatting.ENDC, end='\n\n')

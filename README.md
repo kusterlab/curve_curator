@@ -15,6 +15,18 @@ For more information, we refer to the paper. Especially the supplementary notes 
 
 If you used CurveCurator for your scientific work, please cite: Bayer et al. (2023), Nature Communications, 14(1), 7902.
 
+## Table of Contents  
+* [Installation](#installation_toc)  
+* [Preparation](#preparation_toc)
+  * [Raw data](#rawdata_toc)
+  * [Toml parameter file](#tomlfile_toc)
+* [Run Pipeline](#executaion_toc)
+* [Dashboard Overview](#dashboard_toc)
+* [FAQ](#faq_toc)
+
+
+<a name="installation_toc"/>
+
 ## Installation:
 
 #### 1. Install the virtual environment manager anaconda to install CurveCurator and its dependencies safely.
@@ -63,7 +75,11 @@ If you see instead the message: " 'CurveCurator' is not recognized as an interna
 
 If you want to update CurveCurator to the latest version after you have installed it already, redo the pip install of step 4.
 
+<a name="preparation_toc"/>
+
 ## Preparation:
+
+<a name="rawdata_toc"/>
 
 #### 1. Prepare the raw data
 
@@ -77,6 +93,8 @@ For MAXQUANT, use the protein.txt file for protein-based analysis and the eviden
 For DIANN, it outputs raw file names as columns. Please rename manually to Raw 1..N.
 For PD, the order of the files is important. PD normally labels the output experiments with F1..N. These numbers will be parsed by the CurveCurator. Please make sure that toml file has the same N to dose correspondences. 
 For MSFRAGGER, name your TMT channels or LFQ experiments Raw_1...N. The peptide-based analysis expects the (combined_)ion.tsv file. The protein-based analysis expects the (combined_)protein.tsv file.
+
+<a name="tomlfile_toc"/>
 
 #### 2. Fill out the parameter toml-file for each dataset
 Each dataset comes with a parameter file in TOML (https://toml.io - v1.0.0) format. This file contains all necessary information for each experiment / raw input as well as optional parameters so that users can adjust the pipeline specifically to an experiment. The toml syntax primarily consists of `key = value` pairs, `[section names]`, and `#` (for comments). Example toml files, including extensive comments, are available. Common problems with the parameter file usually concern false formatting. Make sure strings have complete quotation marks. Lists are homogeneous in type, meaning that float and integers cannot be mixed, and that all elements are correctly separated by a comma. You don't need to specify all parameters all the time. Only specify parameters that differ from default behavior or are obligatory for the pipeline.
@@ -142,6 +160,7 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 	- `backend`  Defines different bokeh backends to visualize the data. Default is "webgl", which facilitates fast rendering in the browser using the GPU. When saving plots during data exploration, they will be exported as non-editable .png-files. The backend can be changed to "svg" which allows the export of editable .svg-files. However, it can be a very slow experience in the browser, especially if there are more than 5k curves in the dataset. To get the default bokeh behavior, set it to "canvas" for HTML5 rendering.
 
 
+<a name="executaion_toc"/>
 
 ## Run pipeline
 There are multiple modes to execute CurveCurator:
@@ -169,6 +188,8 @@ If you apply non-standard settings and want to experiment with F-value distribut
 (CurveCuratorEnv)$ CurveCurator <toml_path> --random <N>
 ```
 
+<a name="dashboard_toc"/>
+
 ## Explore data with the interactive dashboard
 
 CurveCurator provides the user with an interactive dashboard. Different functionalities are accessible depending on the specific dataset. All dashboards consist of a global plot on the left side (either volcano plot view or potency plot view), a dose-response curve area in the middle showing selected curves, data selection tools, and a data table giving more information about selected items. Each plot has a toolbar (upper right corner) that allows for data engagement, such as panning, tap or lasso selection, resetting, and saving. Thanks to the hover tool, a small information box appears, showing the name of the dot/curve. There are also a few keyboard shortcuts e.g., multi-selection and de-selection. For more in-depth information, please visit the bokeh documentation. Data from the HTML file cannot be deleted or altered. Refreshing the browser will revert all adjustments, filters, and selections to the default. If a particular representation is of interest, it can be exported as a figure via the save tool. On smaller laptop screens, it is possible that the canvas width exceeds the screen width. Unfortunately, bokeh cannot rescale the width automatically. There are two possibilities to deal with this situation: 1) You either accept it and scroll left and right to plots of interest; or 2) you zoom out until it matches your screen. A quick reload of the HTML page in the browser will remove the blurriness that may arise as a consequence of rescaling. 
@@ -186,6 +207,8 @@ The **Curve Selection area** helps to select and filter curves. Depending on the
 
 The **Table** provides more detailed information about each curve. By clicking on the table's headers, it can be sorted alpha-numerically. By clicking on a table row, only the specific row will be selected, and the rest will be de-selected. When holding the ctrl-key while clicking, only this row is de-selected, and the rest stays selected.
 
+
+<a name="faq_toc"/>
 
 ## FAQ:
 Q: The regulation column in the curves files has categories up, down, not. However, many rows are not classified into these categories. Why? and How should I interpret this?

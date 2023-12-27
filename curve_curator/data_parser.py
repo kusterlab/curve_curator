@@ -97,7 +97,7 @@ def aggregate_duplicates(df, keys, sum_cols=[], first_cols=[], max_cols=[], min_
 
     # Count & Sum the duplicates, then merge results to new_df
     grouped_count = grouped_df.size().to_frame().rename({0: 'N duplicates'}, axis=1)
-    grouped_sum = grouped_df[sum_cols].sum()
+    grouped_sum = grouped_df[sum_cols].sum(min_count=1)
     new_df = pd.merge(left=grouped_count, right=grouped_sum, left_index=True, right_index=True)
 
     # use the first element of the group

@@ -95,23 +95,25 @@ def main():
         if args.random is not None:
             data_simulator.sample(config, n=args.random)
 
-        # Run the pipeline for target curves and save results
+        # Run the pipeline for target curves
         data = data_parser.load(config)
         data = quantification.run_pipeline(data, config=config)
         data = thresholding.apply_significance_thresholds(data, config=config)
-        data.to_csv(config['Paths']['curves_file'], sep='\t', index=False)
 
         # Check Quality
         if args.mad:
             quality_control.mad_analysis(data, config=config)
 
-        # Run the pipeline for decoy curves in FDR mode and save decoys
+        # Run the pipeline for decoy curves in FDR mode
         if args.fdr:
             decoys = data_simulator.get_decoys(data, config=config)
             decoys = quantification.run_pipeline(decoys, config=config, decoy_mode=True)
             decoys = thresholding.apply_significance_thresholds(decoys, config=config)
             fdr = thresholding.estimate_fdr(data, decoys, config=config)
             decoys.to_csv(config['Paths']['decoys_file'], sep='\t', index=False)
+
+        # Save curve file
+        data.to_csv(config['Paths']['curves_file'], sep='\t', index=False)
 
         # Plot the data in the dashboard
         dashboard.render(data, config=config)

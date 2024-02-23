@@ -507,7 +507,7 @@ def run_pipeline(df, config, decoy_mode=False):
     negative_count = (df[cols_ratio] < 0).sum().sum()
     if negative_count > 0:
         ui.warning(f" * {negative_count} negative ratios were detected in the data matrix. CurveCurator expects the y response ratios to be >= 0." +
-                   f"Models will be fit but will never go < 0. Please consider using the 'clip_ratios' parameter to confine the ratios into a defined range. e.g. (0, inf).", end='\n')
+                   f"Models will be fit but will never go < 0. Please consider using the 'ratio_range' parameter to confine the ratios into a defined range. e.g. (0, inf).", end='\n')
 
     # Sort concentrations and observations from low to high dose
     sorted_doses = np.argsort(drug_log_concs)

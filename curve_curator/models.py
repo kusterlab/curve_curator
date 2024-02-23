@@ -201,7 +201,7 @@ class _Model:
 
     def calculate_sum_squared_residuals(self, x, y, params=None):
         """
-        Calculates the root summed squared error of the fitted model for particular data x & y.
+        Calculates the summed squared error of the fitted model for particular data x & y.
 
         Parameters
         ----------
@@ -262,9 +262,9 @@ class _Model:
         if params is None:
             params = self.get_all_parameters()
         ss_residual = self.calculate_sum_squared_residuals(x, y, params)
-        ss_total = np.mean(y)
-        r2 = 1 - ((ss_residual + 1e-10) / (ss_total + 1e-10))
-        r2 = r2 if r2 > 0 else 0
+        ss_total = np.sum((y - np.mean(y)) ** 2)
+        r2 = 1.0 - ((ss_residual + 1e-10) / (ss_total + 1e-10))
+        r2 = r2 if r2 > 0.0 else 0.0
         return r2
 
     def log_likelihood_function(self, x, y):

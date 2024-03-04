@@ -52,6 +52,7 @@ class _Model:
     """
     @staticmethod
     def core(x, *args, **kwargs):
+        x = np.asarray(x)
         return x
 
     @staticmethod
@@ -171,6 +172,7 @@ class _Model:
         """
         if params is None:
             params = self.get_all_parameters()
+        x = np.asarray(x)
         x = x[np.isfinite(x)]
         interval = (np.min(x), np.max(x))
         curve_area = self.integrate_response(interval, params=params)
@@ -202,6 +204,7 @@ class _Model:
     def calculate_sum_squared_residuals(self, x, y, params=None):
         """
         Calculates the summed squared error of the fitted model for particular data x & y.
+        Robust against missing values.
 
         Parameters
         ----------
@@ -218,11 +221,12 @@ class _Model:
         """
         if params is None:
             params = self.get_all_parameters()
-        return np.sum(self.residuals(x, y, params) ** 2)
+        return np.nansum(self.residuals(x, y, params) ** 2)
 
     def calculate_rmse(self, x, y, params=None):
         """
         Calculates the root mean squared error of the fitted model for particular data x & y.
+        Robust against missing values.
 
         Parameters
         ----------
@@ -240,11 +244,13 @@ class _Model:
         if params is None:
             params = self.get_all_parameters()
         ss_res = self.calculate_sum_squared_residuals(x, y, params)
-        return np.sqrt(ss_res / y.size)
+        ss_count = y.size - np.sum(np.isnan(y))
+        return np.sqrt(ss_res / ss_count)
 
     def calculate_r2(self, x, y, params=None):
         """
         Calculates the R2 of the fitted model for particular data x & y.
+        Robust against missing values.
 
         Parameters
         ----------
@@ -261,9 +267,10 @@ class _Model:
         """
         if params is None:
             params = self.get_all_parameters()
-        ss_residual = self.calculate_sum_squared_residuals(x, y, params)
-        ss_total = np.sum((y - np.mean(y)) ** 2)
-        r2 = 1.0 - ((ss_residual + 1e-10) / (ss_total + 1e-10))
+        with np.errstate(invalid='ignore'):
+            ss_residual = self.calculate_sum_squared_residuals(x, y, params)
+            ss_total = np.nansum((y - np.nanmean(y)) ** 2)
+            r2 = 1.0 - ((ss_residual + 1e-10) / (ss_total + 1e-10))
         r2 = r2 if r2 > 0.0 else 0.0
         return r2
 
@@ -457,6 +464,9 @@ class MeanModel(_Model):
         y : array-like
             Response as described by the intercept value for each x value.
         """
+        x = np.asarray(x)
+        if len(x.shape) == 0:
+            return intercept
         return np.full_like(x, intercept)
 
     @staticmethod
@@ -478,6 +488,7 @@ class MeanModel(_Model):
         F_x : float
             antiderivative at x
         """
+        x = np.asarray(x)
         F_x = intercept * x + c
         return F_x
 
@@ -498,6 +509,7 @@ class MeanModel(_Model):
         -------
         Jacobian Matrix : np.array of shape (|x|, 1)
         """
+        x = np.asarray(x)
         jac = np.expand_dims(np.full_like(x, 1), axis=1)
         return jac
 
@@ -738,6 +750,7 @@ class LogisticModel(_Model):
         y : array-like
             Response as described by the input parameters for each x value.
         """
+        x = np.asarray(x)
         with np.errstate(over='ignore', under='ignore', invalid='ignore'):
             y = (front - back) / (1 + 10 ** (slope * (x + pec50))) + back
             return y
@@ -767,6 +780,7 @@ class LogisticModel(_Model):
         F_x : float
             antiderivative value at x
         """
+        x = np.asarray(x)
         F_x = front * x - (front - back) / slope * np.log10(1 + 10 ** (slope * (x + pec50))) + c
         return F_x
 
@@ -793,6 +807,7 @@ class LogisticModel(_Model):
         -------
         Jacobian matrix : np.array of shape (|x|, k) with k params
         """
+        x = np.asarray(x)
         with np.errstate(over='ignore', under='ignore', invalid='ignore'):
             jac = np.array([
                 (np.log(10) * (back - front) *    slope    * 10 ** (slope * (x + pec50))) / (1 + 10 ** (slope * (x + pec50))) ** 2,  # pec50
@@ -976,6 +991,8 @@ class LogisticModel(_Model):
         -------
         jac(params) -> matrix
         """
+        x = np.asarray(x)
+
         # Partial derivatives of OLS to pec50
         def f_1(params):
             p, s, f, b = params
@@ -1036,6 +1053,7 @@ class LogisticModel(_Model):
         -------
         Standard error for each parameter.
         """
+        x = np.asarray(x)
         parameters = self.get_all_parameters()
         # Do Moore-Penrose inverse of jacobian matrix and discarding zero singular values.
         # Similar to scipy optimize.curvefit procedure
@@ -1316,6 +1334,7 @@ class LogisticModel(_Model):
     def estimate_noise(self, x, y, params=None):
         """
         Estimates the unbiased noise in y given the model for particular data x & y input.
+        We found that the noise estimates are more accurate with effective dof instead of 1/n or 1/(n-p).
 
         Parameters
         ----------

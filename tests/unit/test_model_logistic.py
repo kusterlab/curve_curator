@@ -17,6 +17,15 @@ class TestCore:
             LM(self.x, self.params['pec50'], self.params['slope'], "invalid_input", self.params['back'])
             LM(self.x, self.params['pec50'], self.params['slope'], self.params['front'], "invalid_input")
 
+    def test_valid_input_x_types(self):
+        LM = LogisticModel(**self.params)
+        y = LM(self.x)
+        assert isinstance(y, np.ndarray)
+        y = LM(list(self.x))
+        assert isinstance(y, np.ndarray)
+        y = LM(-8.0)
+        assert isinstance(y, float)
+
     def test_output_shape(self):
         LM = LogisticModel()
         y = LM(self.x, self.params['pec50'], self.params['slope'], self.params['front'], self.params['back'])
@@ -432,3 +441,77 @@ class TestAreaUnderTheCurve:
         x1 = self.x[::-1]
         LM = LogisticModel(**params)
         np.testing.assert_almost_equal(LM.get_auc(self.x), LM.get_auc(x1), decimal=6)
+
+
+class TestR2:
+    x = np.array([-np.inf, -12, -11, -10,  -9,  -8,  -7,  -6,  -5,  -4])
+
+    def no_curve_back(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 1.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        r2 = LM.calculate_r2(self.x, y)
+        r2_expected = 0.0
+        np.testing.assert_almost_equal(r2, r2_expected)
+
+    def no_curve_pec50(self):
+        params = {'pec50': 0.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        r2 = LM.calculate_r2(self.x, y)
+        r2_expected = 0.0
+        np.testing.assert_almost_equal(r2, r2_expected)
+
+    def curve(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        r2 = LM.calculate_r2(self.x, y)
+        r2_expected = 1.0
+        np.testing.assert_almost_equal(r2, r2_expected, decimal=6)
+
+    def test_nan_robustness(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        y[-1] = np.nan
+        r2_a = LM.calculate_r2(self.x[:-1], y[:-1])
+        r2_b = LM.calculate_r2(self.x, y)
+        np.testing.assert_almost_equal(r2_a, r2_b)
+
+
+class TestRMSE:
+    x = np.array([-np.inf, -12, -11, -10,  -9,  -8,  -7,  -6,  -5,  -4])
+
+    def test_no_curve_no_error(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 1.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        rmse_expected = 0.0
+        rmse = LM.calculate_rmse(self.x, y)
+        np.testing.assert_almost_equal(rmse, rmse_expected)
+
+    def test_curve_no_error(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        rmse_expected = 0.0
+        rmse = LM.calculate_rmse(self.x, y)
+        np.testing.assert_almost_equal(rmse, rmse_expected)
+
+    def test_curve_with_error(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        error = 0.25
+        rmse = LM.calculate_rmse(self.x, y+error)
+        np.testing.assert_almost_equal(rmse, error)
+
+    def test_curve_with_error_nan(self):
+        params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        LM = LogisticModel(**params)
+        y = LM(self.x)
+        y[-1] = np.nan
+        error = 0.25
+        rmse = LM.calculate_rmse(self.x, y+error)
+        np.testing.assert_almost_equal(rmse, error)

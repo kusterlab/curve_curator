@@ -13,6 +13,15 @@ class TestCore:
         with pytest.raises(TypeError):
             M("invalid_input")
 
+    def test_valid_input_x_types(self):
+        M = MeanModel(**self.params)
+        y = M(self.x)
+        assert isinstance(y, np.ndarray)
+        y = M(list(self.x))
+        assert isinstance(y, np.ndarray)
+        y = M(-8.0)
+        assert isinstance(y, type(self.params['intercept']))
+
     def test_output_shape(self):
         M = MeanModel()
         y = M(self.x, self.params['intercept'])
@@ -168,3 +177,70 @@ class TestFitting:
         M.basinhopping_ols(self.x, self.y, self.noise)
         fitted_params = M.get_fitted_params()
         pd.testing.assert_series_equal(pd.Series(fitted_params), pd.Series(self.params), atol=1e-4)
+
+
+class TestR2:
+    x = np.log10([0.3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10000]) - 9
+
+    def test_output_1(self):
+        M = MeanModel(intercept=1)
+        y = M(self.x)
+        r2 = M.calculate_r2(self.x, y)
+        r2_expected = 0.0
+        np.testing.assert_almost_equal(r2, r2_expected)
+
+    def test_output_2(self):
+        M = MeanModel(intercept=0)
+        y = M(self.x)
+        r2 = M.calculate_r2(self.x, y)
+        r2_expected = 0.0
+        np.testing.assert_almost_equal(r2, r2_expected)
+
+    def test_output_3(self):
+        M = MeanModel(intercept=1)
+        y = M(self.x)
+        y[-1] = -np.inf
+        r2 = M.calculate_r2(self.x, y)
+        r2_expected = 0.0
+        np.testing.assert_almost_equal(r2, r2_expected)
+
+    def test_output_4(self):
+        M = MeanModel(intercept=0)
+        y = np.array([i%2 for i in range(len(self.x))]) - 0.5
+        r2 = M.calculate_r2(self.x, y)
+        r2_expected = 0.0
+        np.testing.assert_almost_equal(r2, r2_expected)
+
+    def test_nan_robustness(self):
+        M = MeanModel(intercept=1)
+        y = M(self.x)
+        y[-1] = np.nan
+        r2_a = M.calculate_r2(self.x[:-1], y[:-1])
+        r2_b = M.calculate_r2(self.x, y)
+        np.testing.assert_almost_equal(r2_a, r2_b)
+
+
+class TestRMSE:
+    x = np.array([-np.inf, -12, -11, -10,  -9,  -8,  -7,  -6,  -5,  -4])
+
+    def test_no_error(self):
+        M = MeanModel(intercept=1)
+        y = M(self.x)
+        rmse_expected = 0.0
+        rmse = M.calculate_rmse(self.x, y)
+        np.testing.assert_almost_equal(rmse, rmse_expected)
+
+    def test_with_error(self):
+        M = MeanModel(intercept=1)
+        y = M(self.x)
+        error = 0.5
+        rmse = M.calculate_rmse(self.x, y+error)
+        np.testing.assert_almost_equal(rmse, error)
+
+    def test_with_error_nan(self):
+        M = MeanModel(intercept=1)
+        y = M(self.x)
+        y[-1] = np.nan
+        error = 0.5
+        rmse = M.calculate_rmse(self.x, y+error)
+        np.testing.assert_almost_equal(rmse, error)

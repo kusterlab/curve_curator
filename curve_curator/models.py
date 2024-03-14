@@ -75,6 +75,12 @@ class _Model:
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
 
+    # Define model equality
+    def __eq__(self, other):
+        same_type = type(self) == type(other)
+        same_parameters = self.get_all_parameters() == other.get_all_parameters()
+        return same_type and same_parameters
+
     def reset(self):
         """
         Rests all values.
@@ -109,6 +115,7 @@ class _Model:
     def set_fitted_params(self, values):
         """
         Saves the parameter estimates to the modle and returns the object.
+        Values is a list of parameter estimate values in the same order as free parameters.
         """
         values = iter(values)
         self.fitted_params = {p: next(values) for p, _ in self.params.items() if _ is None}
@@ -117,6 +124,7 @@ class _Model:
     def set_params_error(self, values):
         """
         Saves the parameter error values to the modle and returns the object.
+        Values is a list of parameter estimate errors in the same order as free parameters.
         """
         values = iter(values)
         self.params_error = {p: next(values) for p in self.params.keys()}
@@ -1347,12 +1355,14 @@ class LogisticModel(_Model):
 
         Returns
         -------
-        rmse
+        noise estimate
         """
         if params is None:
             params = self.get_all_parameters()
+        x, y = np.asarray(x), np.asarray(y)
         ss_res = self.calculate_sum_squared_residuals(x, y, params)
-        dof = self.get_dofs(n=y.size)[1]
+        n_obs = y.size - np.sum(np.isnan(y))
+        dof = self.get_dofs(n=n_obs)[1]
         return np.sqrt(ss_res / dof)
 
     def get_dofs(self, n, optimized=True):

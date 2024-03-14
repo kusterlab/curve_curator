@@ -292,8 +292,8 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         M0.fit_mle(x_fit, y_fit)
     else:
         raise ValueError(f"Fit strategy type=\"{fit_params['type']}\" is not implemented.")
-    intercept = M0.get_all_parameters()['intercept']
-    rmse = M0.calculate_rmse(x_fit, y_fit)
+    m0_intercept = M0.get_all_parameters()['intercept']
+    m0_rmse = M0.calculate_rmse(x, y)
 
     # Fit the unrestricted model with ordinary least squares (ols)
     if fit_params['type'] == 'OLS':
@@ -326,6 +326,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
 
     # Get extra parameter
     M1.calculate_parameter_error(x, y)
+    rmse = M1.calculate_rmse(x, y)
     r2 = M1.calculate_r2(x, y)
     fold_change = M1.calculate_fold_change(x[1:], to_control=fit_params['control_fold_change'])
     auc = M1.get_auc(x)
@@ -347,7 +348,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     p_opt = M1.get_all_parameters().values()
     p_err = M1.get_params_error().values()
 
-    return (*p_opt, fold_change, auc, r2, M1.noise, *p_err, intercept, M0.noise, rmse, M1.likelihood, M0.likelihood, f_statistic, p_values)
+    return (*p_opt, fold_change, auc, rmse, r2, M1.noise, *p_err, m0_intercept, M0.noise, m0_rmse, M1.likelihood, M0.likelihood, f_statistic, p_values)
 
 
 def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
@@ -410,7 +411,7 @@ def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
                                          axis=1)
 
     # Typecast - apply output to DataFrame with the following column names
-    fit_cols = ['pEC50', 'Curve Slope', 'Curve Front', 'Curve Back', 'Curve Fold Change', 'Curve AUC', 'Curve R2', 'Curve Noise',
+    fit_cols = ['pEC50', 'Curve Slope', 'Curve Front', 'Curve Back', 'Curve Fold Change', 'Curve AUC', 'Curve RMSE', 'Curve R2', 'Curve Noise',
                 'pEC50 Error', 'Curve Slope Error', 'Curve Front Error', 'Curve Back Error',
                 'Null Model', 'Null Noise', 'Null RMSE', 'Curve Likelihood', 'Curve Null Likelihood', 'Curve F_Value', 'Curve P_Value']
     df[fit_cols] = pd.DataFrame(data=fits.tolist(), columns=fit_cols, index=df.index)

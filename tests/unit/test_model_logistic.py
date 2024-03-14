@@ -4,7 +4,159 @@ import pytest
 from curve_curator.models import LogisticModel
 
 
-class TestCore:
+class TestBasics:
+
+    def test_setup_blank_model(self):
+        LM = LogisticModel()
+
+    def test_setup_preinitialized_models_individual_pec50(self):
+        LM = LogisticModel(pec50=7.0)
+        # fixed params
+        expected_out = {'pec50': 7.0}
+        assert expected_out == LM.get_fixed_params()
+        # free params
+        expected_out = {'slope': None, 'front': None, 'back': None}
+        assert expected_out == LM.get_free_params()
+        # number of free params
+        expected_n = 3
+        assert expected_n == LM.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+        # all params
+        expected_out = {'pec50': 7.0, 'slope': np.nan, 'front': np.nan, 'back': np.nan}
+        assert expected_out == LM.get_all_parameters()
+
+    def test_setup_preinitialized_models_individual_slope(self):
+        LM = LogisticModel(slope=1.0)
+        # fixed params
+        expected_out = {'slope': 1.0}
+        assert expected_out == LM.get_fixed_params()
+        # free params
+        expected_out = {'pec50': None, 'front': None, 'back': None}
+        assert expected_out == LM.get_free_params()
+        # number of free params
+        expected_n = 3
+        assert expected_n == LM.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+        # all params
+        expected_out = {'pec50': np.nan, 'slope': 1.0, 'front': np.nan, 'back': np.nan}
+        assert expected_out == LM.get_all_parameters()
+
+    def test_setup_preinitialized_models_individual_front(self):
+        LM = LogisticModel(front=1.0)
+        # fixed params
+        expected_out = {'front': 1.0}
+        assert expected_out == LM.get_fixed_params()
+        # free params
+        expected_out = {'pec50': None, 'slope': None, 'back': None}
+        assert expected_out == LM.get_free_params()
+        # number of free params
+        expected_n = 3
+        assert expected_n == LM.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+        # all params
+        expected_out = {'pec50': np.nan, 'slope': np.nan, 'front': 1.0, 'back': np.nan}
+        assert expected_out == LM.get_all_parameters()
+
+    def test_setup_preinitialized_models_individual_back(self):
+        LM = LogisticModel(back=0.0)
+        # fixed params
+        expected_out = {'back': 0.0}
+        assert expected_out == LM.get_fixed_params()
+        # free params
+        expected_out = {'pec50': None, 'slope': None, 'front': None}
+        assert expected_out == LM.get_free_params()
+        # number of free params
+        expected_n = 3
+        assert expected_n == LM.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+        # all params
+        expected_out = {'pec50': np.nan, 'slope': np.nan, 'front': np.nan, 'back': 0.0}
+        assert expected_out == LM.get_all_parameters()
+
+    def test_setup_preinitialized_models_individual_all(self):
+        LM = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        # fixed params
+        expected_out = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        assert expected_out == LM.get_fixed_params()
+        # free params
+        expected_out = {}
+        assert expected_out == LM.get_free_params()
+        # number of free params
+        expected_n = 0
+        assert expected_n == LM.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+        # all params
+        expected_out = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        assert expected_out == LM.get_all_parameters()
+
+    def test_set_and_reset_fitted_values(self):
+        LM = LogisticModel()
+        # before
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+        # update
+        LM.set_fitted_params([7.0, 1.0, 1.0, 0.0])
+        expected_out = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+        assert expected_out == LM.get_fitted_params()
+        assert expected_out == LM.get_all_parameters()
+        # reset
+        LM.reset()
+        expected_out = {}
+        assert expected_out == LM.get_fitted_params()
+
+
+class TestEquality:
+
+    def test_equality_blank(self):
+        LM_1 = LogisticModel()
+        LM_2 = LogisticModel()
+        assert LM_1 == LM_2
+
+    def test_equality_normal(self):
+        LM_1 = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        LM_2 = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        assert LM_1 == LM_2
+
+    def test_equality_int_vs_float(self):
+        LM_1 = LogisticModel(pec50=7, slope=1, front=1, back=0)
+        LM_2 = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        assert LM_1 == LM_2
+
+    def test_inequality_empty_vs_full(self):
+        LM_1 = LogisticModel()
+        LM_2 = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        assert LM_1 != LM_2
+
+    def test_inequality_different_values(self):
+        LM = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        LM_pec50 = LogisticModel(pec50=8.0, slope=1.0, front=1.0, back=0.0)
+        LM_slope = LogisticModel(pec50=7.0, slope=2.0, front=1.0, back=0.0)
+        LM_front = LogisticModel(pec50=7.0, slope=1.0, front=1.1, back=0.0)
+        LM_back = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=1.0)
+        assert LM != LM_pec50
+        assert LM != LM_slope
+        assert LM != LM_front
+        assert LM != LM_back
+
+    def test_equality_with_fixed_and_fitted_values(self):
+        LM_1 = LogisticModel()
+        LM_2 = LogisticModel(pec50=7.0, slope=1.0, front=1.0, back=0.0)
+        assert LM_1 != LM_2
+        LM_1.set_fitted_params([7.0, 1.0, 1.0, 0.0])
+        assert LM_1 == LM_2
+
+
+class TestCoreFunction:
     x = np.array([-9.0, -8.0, -7.0, -6.0, -5.0])
     params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.1}
 
@@ -381,6 +533,40 @@ class TestDegreesOfFreedom:
         dof_d_expected = np.array([n - 4 for n in self.N])
         np.testing.assert_almost_equal(dof_n_expected, dof_n, decimal=6)
         np.testing.assert_almost_equal(dof_d_expected, dof_d, decimal=6)
+
+
+class TestNoise_Estimation:
+    x = np.array([-np.inf, -12, -11, -10,  -9,  -8,  -7,  -6,  -5,  -4])
+    params = {'pec50': 8.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+
+    def test_no_error(self):
+        LM = LogisticModel(**self.params)
+        y = LM(self.x)
+        noise_expected = 0.0
+        noise = LM.estimate_noise(self.x, y)
+        np.testing.assert_almost_equal(noise, noise_expected)
+
+    def test_with_error_1(self):
+        LM = LogisticModel(**self.params)
+        y = LM(self.x) + 1.0
+        noise_expected = 1.2970766196371821
+        noise = LM.estimate_noise(self.x, y)
+        np.testing.assert_almost_equal(noise, noise_expected)
+
+    def test_with_error_10(self):
+        LM = LogisticModel(**self.params)
+        y = LM(self.x) + 10.0
+        noise_expected = 12.970766196371821
+        noise = LM.estimate_noise(self.x, y)
+        np.testing.assert_almost_equal(noise, noise_expected)
+
+    def test_error_with_more_doses(self):
+        x = np.array([-np.inf, -12, -11.5, -11, -10.5, -10,  -9.5, -9,  -8.5, -8,  -7.5, -7,  -6.5, -6,  -5.5, -5,  -4.5, -4])
+        LM = LogisticModel(**self.params)
+        y = LM(x) + 1.0
+        noise_expected = 1.205181318024913
+        noise = LM.estimate_noise(x, y)
+        np.testing.assert_almost_equal(noise, noise_expected)
 
 
 class TestAreaUnderTheCurve:

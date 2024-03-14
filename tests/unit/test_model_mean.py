@@ -4,7 +4,96 @@ import pytest
 from curve_curator.models import MeanModel
 
 
-class TestCore:
+class TestBasics:
+
+    def test_setup_blank_model(self):
+        M = MeanModel()
+        # fixed params
+        expected_out = {}
+        assert expected_out == M.get_fixed_params()
+        # free params
+        expected_out = {'intercept': None}
+        assert expected_out == M.get_free_params()
+        # number of free params
+        expected_n = 1
+        assert expected_n == M.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == M.get_fitted_params()
+        # all params
+        expected_out = {'intercept': np.nan}
+        assert expected_out == M.get_all_parameters()
+
+    def test_setup_preinitialized_model(self):
+        M = MeanModel(intercept=1.0)
+        # fixed params
+        expected_out = {'intercept': 1.0}
+        assert expected_out == M.get_fixed_params()
+        # free params
+        expected_out = {}
+        assert expected_out == M.get_free_params()
+        # number of free params
+        expected_n = 0
+        assert expected_n == M.n_parameter()
+        # fitted params
+        expected_out = {}
+        assert expected_out == M.get_fitted_params()
+        # all params
+        expected_out = {'intercept': 1.0}
+        assert expected_out == M.get_all_parameters()
+
+    def test_set_and_reset_fitted_values(self):
+        M = MeanModel()
+        # before
+        expected_out = {}
+        assert expected_out == M.get_fitted_params()
+        # update
+        M.set_fitted_params([1.0])
+        expected_out = {'intercept': 1.0}
+        assert expected_out == M.get_fitted_params()
+        assert expected_out == M.get_all_parameters()
+        # reset
+        M.reset()
+        expected_out = {}
+        assert expected_out == M.get_fitted_params()
+
+
+class TestEquality:
+
+    def test_equality_blank(self):
+        M_1 = MeanModel()
+        M_2 = MeanModel()
+        assert M_1 == M_2
+
+    def test_equality_normal(self):
+        M_1 = MeanModel(intercept=1.0)
+        M_2 = MeanModel(intercept=1.0)
+        assert M_1 == M_2
+
+    def test_equality_int_vs_float(self):
+        M_1 = MeanModel(intercept=1.0)
+        M_2 = MeanModel(intercept=1)
+        assert M_1 == M_2
+
+    def test_inequality_empty_vs_full(self):
+        M_1 = MeanModel()
+        M_2 = MeanModel(intercept=1.0)
+        assert M_1 != M_2
+
+    def test_inequality_different_values(self):
+        M_1 = MeanModel(intercept=1.0)
+        M_2 = MeanModel(intercept=2.0)
+        assert M_1 != M_2
+
+    def test_equality_with_fixed_and_fitted_values(self):
+        M_1 = MeanModel()
+        M_2 = MeanModel(intercept=1.0)
+        assert M_1 != M_2
+        M_1.set_fitted_params([1.0])
+        assert M_1 == M_2
+
+
+class TestCoreFunction:
     x = np.array([-9.0, -8.0, -7.0, -6.0, -5.0])
     params = {'intercept': 1}
 

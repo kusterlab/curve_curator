@@ -227,6 +227,12 @@ def check_toml_params(config):
         if not dose_unit:
             error("Error: [Experiment] 'dose_unit' is empty.")
             raise ValueError("[Experiment] 'dose_unit'")
+        if len(experiments) != len(set(experiments)):
+            error("Error: [Experiment] 'experiments' contains duplicates. Make sure experiment names are unique.")
+            raise ValueError("[Experiment] 'experiments' contains duplicates.")
+        if len(control_experiment) != len(set(control_experiment)):
+            error("Error: [Experiment] 'control_experiment' contains duplicates. Make sure experiment names are unique.")
+            raise ValueError("[Experiment] 'control_experiment' contains duplicates.")
 
         #
         # ['Paths']
@@ -323,9 +329,9 @@ def set_default_values(config):
     """
     Sets default values for optional parameters of the pipeline when the user didn't specify it.
     """
-    experiments = np.array(config['Experiment']['experiments']).flatten()
-    control_experiments = np.array([config['Experiment']['control_experiment']]).flatten()
-    doses = np.array([config['Experiment']['doses']]).flatten()
+    experiments = np.array(config['Experiment']['experiments']).flatten().astype(str)
+    control_experiments = np.array([config['Experiment']['control_experiment']]).flatten().astype(str)
+    doses = np.array([config['Experiment']['doses']]).flatten().astype(float)
 
     # Experiment
     exp_params = config['Experiment']

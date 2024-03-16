@@ -348,7 +348,6 @@ def load(config):
         df = load_diann_lqf_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=raw_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'LFQ') and (search_engine == 'MAXQUANT') and (data_type == 'PROTEIN'):
         # TODO: make this to dictionary
@@ -358,7 +357,6 @@ def load(config):
         df = load_mq_lqf_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols, max_cols=max_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'LFQ') and (search_engine == 'PD') and (data_type == 'PROTEIN'):
         # TODO: make this to dictionary
@@ -370,7 +368,6 @@ def load(config):
             df['Genes'] = df['Proteins']
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'LFQ') and (search_engine == 'MSFRAGGER') and (data_type == 'PROTEIN'):
         unique_cols = ['Proteins', 'Genes']
@@ -378,7 +375,6 @@ def load(config):
         df = load_fragger_lqf_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'LFQ') and (search_engine == 'MAXQUANT') and (data_type == 'PEPTIDE'):
         # TODO: make this to dictionary
@@ -388,7 +384,6 @@ def load(config):
         df = load_mq_lfq_peptides(path, search_engine_version, unique_cols=unique_cols, first_cols=first_cols, sum_cols=raw_cols, max_cols=max_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'LFQ') and (search_engine == 'MSFRAGGER') and (data_type == 'PEPTIDE'):
         # TODO: make this to dictionary
@@ -400,7 +395,6 @@ def load(config):
             df['Genes'] = df['Proteins']
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'MAXQUANT') and (data_type == 'PROTEIN'):
         unique_cols = ['Proteins', 'Genes']
@@ -409,7 +403,6 @@ def load(config):
         df = load_mq_tmt_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols, max_cols=max_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'MSFRAGGER') and (data_type == 'PROTEIN'):
         unique_cols = ['Proteins', 'Genes']
@@ -417,7 +410,6 @@ def load(config):
         df = load_fragger_tmt_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=sum_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'MAXQUANT') and (data_type == 'PEPTIDE'):
         # TODO: make this to dictionary
@@ -427,7 +419,6 @@ def load(config):
         df = load_mq_tmt_peptides(path, search_engine_version, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols, max_cols=max_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'PD') and (data_type == 'PEPTIDE'):
         # TODO: make this to dictionary
@@ -439,7 +430,6 @@ def load(config):
             df['Genes'] = df['Proteins']
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'MSFRAGGER') and (data_type == 'PEPTIDE'):
         # TODO: make this to dictionary
@@ -451,7 +441,6 @@ def load(config):
             df['Genes'] = df['Proteins']
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'OTHER') and (data_type == 'PEPTIDE'):
         df = load_generic_peptide_format(path)
@@ -460,7 +449,6 @@ def load(config):
                 df['Name'] = df['Genes']
             else:
                 df['Name'] = df.index.values.copy()
-        return df
 
     elif (measurement_type == 'TMT') and (search_engine == 'OTHER') and (data_type == 'PROTEIN'):
         df = load_generic_protein_format(path)
@@ -469,13 +457,26 @@ def load(config):
                 df['Name'] = df['Genes']
             else:
                 df['Name'] = df.index.values.copy()
-        return df
 
     elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'OTHER'):
         unique_col = 'Name'
         df = load_generic(path, unique_col=unique_col, sum_cols=raw_cols)
-        return df
 
     else:
         msg = f'The combination of measurement_type = "{measurement_type}", data type = "{data_type}", and  search_engine = "{search_engine}" is currently not supported.'
         raise NotImplementedError(msg)
+
+    # if there are completely empty columns, drop empty columns from the input df and remove it from the config file
+    empty_cols = (df[raw_cols].isna().mean() == 1.0)
+    empty_cols = empty_cols[empty_cols].index
+    empty_experiments = set(empty_cols.str.replace('Raw ', ''))
+    if len(empty_experiments) > 0:
+        df = df.drop(empty_cols, axis='columns')
+        keep_idx = [i for i, e in enumerate(config['Experiment']['experiments']) if e not in empty_experiments]
+        config['Experiment']['experiments'] = config['Experiment']['experiments'][keep_idx].copy()
+        config['Experiment']['doses'] = config['Experiment']['doses'][keep_idx].copy()
+        config['Experiment']['control_experiment'] = np.array([e for e in config['Experiment']['control_experiment'] if e not in empty_experiments])
+        ui.warning(' * The following experiments have no values in the data file and have been removed from the analysis:', end='\n')
+        ui.warning('   {}'.format(sorted(empty_experiments)))
+
+    return df

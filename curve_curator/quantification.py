@@ -252,7 +252,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     y_control = 1
     weights = fit_params.get('weights')
 
-    # Mask implausible y values and apply to x, y, weights
+    # Mask implausible and missing y values and apply the mask to x, y, weights
     finite_values = np.isfinite(y_data)
     if not all(finite_values):
         y_data = y_data[finite_values]
@@ -270,8 +270,10 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         return 19 * (np.nan,)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
+    # If replicated doses exist, they must be aggregated before the linear interpolation is done to prevent arbitrary steps in the function.
     if fit_params.get('interpolation', False):
-        f_linear = interpolate.interp1d(x_data, y_data, kind='linear')
+        x_aggregated, y_aggregated = tool.aggregate_xy(x_data, y_data, agg_fun=np.mean)
+        f_linear = interpolate.interp1d(x_aggregated, y_aggregated, kind='linear', assume_sorted=True)
         x_linear = fit_params['x_interpolated']
         # Mask terminal missing values
         if not all(finite_values):
@@ -279,7 +281,10 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         # Add the values to the fit variables
         x_fit = np.append(x, x_linear)
         y_fit = np.append(y, f_linear(x_linear))
+        # No weights are possible in the interpolation mode because they are difficult to compute in a meaningful way.
         weights = None
+
+    # Else the fit values correspond to the actual data only.
     else:
         x_fit = x
         y_fit = y

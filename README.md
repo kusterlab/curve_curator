@@ -129,8 +129,9 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 	- `available_cores` number of cores for parallelized fitting. The default value is 1 core.
 	- `imputation` toggle if missing values should be imputed by a constant low value. This makes it very relevant for proteomic data, where missing values correlate with low abundance. If NANs are missing at random, don't set the toggle to true. The default is no imputation (=false).
 	- `imputation_pct` is the specified percentile used for imputation. The default value is 0.005 (=0.5% raw intensity percentile of the control distribution).
-	- `max_missing` number of maximally tolerated missing values per curve excluding the control(s). If an experiment has more than an accepted number of NANs, it is removed from the analysis. If imputation is activated, then this will also limit the maximal number of allowed imputations per experiment. The default behavior is retaining all experiments.
-	- `normalization` toggle if data should be globally normalized between experiments by a log-normal median-centric approach. This is important for proteomics data. The default behavior is not normalizing (=false).
+    - `max_missing` number of maximally tolerated missing values per curve excluding the control(s). If an experiment has more than an accepted number of NANs, it is removed from the analysis. The default behavior is retaining all curves.
+    - `max_imputation` number of maximally tolerated imputed values per curve excluding the controls(s). If an experiment has more than an accepted number of imputed values, it is removed from the analysis. The default behavior is retaining all curves.
+    - `normalization` toggle if data should be globally normalized between experiments by a log-normal median-centric approach. This is important for proteomics data. The default behavior is not normalizing (=false).
     - `ratio_range` (array) specifies the lower and upper boundary of the ratio value range. If a value is outside the specified range, it will be clipped to the boundary. By default no ratio boundaries are applied, but the dose-response model cannot fit to negative values.
 
 - `['Curve Fit']` contains all optional parameters that are related to the curve fitting procedure. For default behavior, nothing needs to be specified here.
@@ -223,4 +224,16 @@ A: Curve curator can deal with replicated data. It is also possible to have only
 
 Q: What is the Relevance Score?
 
-A: After fitting the curve model to the observed response, CurveCurator calculates an F-value and p-value for each regression curve. The user has then defined an alpha threshold (to control statistical significance) and a fold change threshold (to define biological relevance) that are both used to find high-quality curves in the dataset. The relevance score combines these two properties of significance and biological relevance into a single number for each curve. Consequently, the previous hyperbolic decision boundary in the classical volcano plot will be a single relevance threshold in the alternative volcano plot after the transformation. 
+A: After fitting the curve model to the observed response, CurveCurator calculates an F-value and p-value for each regression curve. The user has then defined an alpha threshold (to control statistical significance) and a fold change threshold (to define biological relevance) that are both used to find high-quality curves in the dataset. The relevance score combines these two properties of significance and biological relevance into a single number for each curve. Consequently, the previous hyperbolic decision boundary in the classical volcano plot will be a single relevance threshold in the alternative volcano plot after the transformation.
+
+Q: Can CurveCurator deal with data other than dose-response data, such as temperature-response or time-response data?
+
+A: CurveCurator was specifically optimized for dose-response data, where the response is typically expected to be sigmoidal in the log-transformed space. Other x-dimensions, such as time, can be processed and assessed principally, but CurveCurator will miss any non-sigmoidal behaviors. Furthermore, the x-dimension is currently always log10-transformed. If your data is sigmoidal in real space, you could pow10-transform the "doses" in the toml file to counteract the log10-transformation. We plan to make this more convenient in the future.
+
+Q: Can I combine experiments with different doses into the same analysis run?
+
+A: Unfortunately, this is not possible at the moment. Please split your data by experiment dose range and run them separately. We plan to make this more convenient in the future. 
+
+Q: Where can I get more information and help?
+
+A: We added many additional information to the [supplementary text](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-023-43696-z/MediaObjects/41467_2023_43696_MOESM1_ESM.pdf 'supplementary text') of the original CurveCurator publication starting from page 13.

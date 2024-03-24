@@ -21,47 +21,48 @@ search_engine_version = '1.6.3.10'					# The search engine version.
 ['Paths']
 # The paths needed for import. They must be relative to the toml files
 input_file = './evidence.txt'						# Relative path to the input file holding the data.
-#curves_file = './curves.txt'						# Relative path to the output file containing the curves.
-#decoys_file = './decoys.txt'						# Relative path to the output file containing the decoy curves.
-#fdr_file = './fdr.txt'							# Relative path to the file containing the fdr estimate in fdr mode.
-#normalization_file = './normalization_factors.txt'			# Relative path to the file containing the normalization_factor for each experiment.
-#mad_file = './mad.txt'							# Relative path to the file containing the mad analysis for each experiment.
-#dashboard = './dashboard.html'						# Relative path to the interactive dashboard to explore the curves.
+curves_file = './curves.txt'						# Relative path to the output file containing the curves.
+decoys_file = './decoys.txt'						# Relative path to the output file containing the decoy curves.
+fdr_file = './fdr.txt'							# Relative path to the file containing the fdr estimate in fdr mode.
+normalization_file = './normalization_factors.txt'			# Relative path to the file containing the normalization_factor for each experiment.
+mad_file = './mad.txt'							# Relative path to the file containing the mad analysis for each experiment.
+dashboard = './dashboard.html'						# Relative path to the interactive dashboard to explore the curves.
 
 
 ['Processing']
 # Parameters for the data analysis pipeline
-#available_cores = 20							# <N> number of cores for parallelization.
-#max_missing = 4							# <N> number of measured intensities that are allowed to be missing per curve excluding controls.
-#imputation = true							# <true | false> impute missing values.
-#normalization = true							# <true | false> median centering of log-normalized values.
-#ratio_range = [0.0, +inf]						# [<lower>, <upper>] The range of values the response ratios can have. A value outside the range will be clipped to the lower or upper boundary value.
+available_cores = 20							# <N> number of cores for parallelization.
+max_missing = 4								# <N> number of measured intensities that are allowed to be missing per curve excluding controls.
+max_imputation = 5							# <N> number of imputed intensities that are allowed per curve excluding controls.
+imputation = true							# <true | false> impute missing values.
+normalization = true							# <true | false> median centering of log-normalized values.
+ratio_range = [0.0, +inf]						# [<lower>, <upper>] The range of values the response ratios can have. A value outside the range will be clipped to the lower or upper boundary value.
 
 ['Curve Fit']
-#front = 1.0								# <N> This will fix the curve front to the value N. 
-#slope = 1.0								# <N> This will fix the curve slope to the value N.
-#back = 0.0								# <N> This will fix the curve back to the value N.
-#weights								# Add weights for the curve fit. They must have the same order and number as doses and experiments.
-#interpolation								# <true | false> use interpolated helperpoints for the curve fit.
-#type									# <'OLS'|'MLE'> The type of parameter estimation.
-#speed									# <'fast'|'standard'|'exhaustive'|'basinhopping'> The approach of finding the global minimum.
-#max_iterations								# <N> This will limit the number of iterations to N before parameter estimation is terminated.
-#control_fold_change = True						# <true | false> Calculate the curve fold change relative to the control.
-#interpolation = True							# <true | false> Use interpolation helper points for robust curve fitting.
+front = 1.0								# <N> This will fix the curve front to the value N. 
+slope = 1.0								# <N> This will fix the curve slope to the value N.
+back = 0.0								# <N> This will fix the curve back to the value N.
+weights									# Add weights for the curve fit. They must have the same order and number as doses and experiments.
+interpolation								# <true | false> use interpolated helperpoints for the curve fit.
+type									# <'OLS'|'MLE'> The type of parameter estimation.
+speed									# <'fast'|'standard'|'exhaustive'|'basinhopping'> The approach of finding the global minimum.
+max_iterations								# <N> This will limit the number of iterations to N before parameter estimation is terminated.
+control_fold_change = True						# <true | false> Calculate the curve fold change relative to the control.
+interpolation = True							# <true | false> Use interpolation helper points for robust curve fitting.
 
 ['F Statistic']
 alpha = 0.05								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis).
 fc_lim = 0.45								# Absolute Log2 Fold Change limit for a biologically meaningful curve (SAM-Analysis).
 optimized_dofs = true							# <true | false> Use the optimized degrees of freedom for correct p-value estimation.
-#loc = 0.12								# <N> This will fix the location parameter of the f-distribution to the value N. 
-#scale = 1.0								# <N> This will fix the scale parameter of the f-distribution to the value N. 
-#dfn = 5.0								# <N> This will fix the dfn parameter of the f-distribution to the value N. 
-#dfd = 7.0								# <N> This will fix the dfd parameter of the f-distribution to the value N. 
-#quality_min = 0							# <N> This will apply an extra intensity filter of N for regulated curves.  
-#mtc_method								# Multiple testing correction method. See statsmodel for available types.
-#not_rmse_limit = 0.1							# <N> specifies the root-mean-squared error threshold for the not classification.
-#not_p_limit								# <N> specifies an additional maximum p-value threshold for the not classification.
-#decoy_ratio = 1.0							# <N> specifies the target decoy ratio.
+loc = 0.12								# <N> This will fix the location parameter of the f-distribution to the value N. 
+scale = 1.0								# <N> This will fix the scale parameter of the f-distribution to the value N. 
+dfn = 5.0								# <N> This will fix the dfn parameter of the f-distribution to the value N. 
+dfd = 7.0								# <N> This will fix the dfd parameter of the f-distribution to the value N. 
+quality_min = 0								# <N> This will apply an extra intensity filter of N for regulated curves.  
+mtc_method								# Multiple testing correction method. See statsmodel for available types.
+not_rmse_limit = 0.1							# <N> specifies the root-mean-squared error threshold for the not classification.
+not_p_limit								# <N> specifies an additional maximum p-value threshold for the not classification.
+decoy_ratio = 1.0							# <N> specifies the target decoy ratio.
 
 ['Dashboard']
-#backend = 'svg'							# <'webgl'|'svg'|'canvas'> Specifies the HTML output backend.
+backend = 'svg'								# <'webgl'|'svg'|'canvas'> Specifies the HTML output backend.

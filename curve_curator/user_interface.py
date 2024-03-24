@@ -358,6 +358,7 @@ def set_default_values(config):
     proc_params['imputation_pct'] = float(proc_params.get('imputation_pct', 0.005))
     proc_params['normalization'] = bool(proc_params.get('normalization', False))
     proc_params['max_missing'] = int(proc_params.get('max_missing', len(experiments)))
+    proc_params['max_imputation'] = int(proc_params.get('max_missing', proc_params['max_missing']))  # equivalent to max_missing by default
     proc_params['ratio_range'] = proc_params.get('ratio_range', None)
     config['Processing'] = proc_params
 

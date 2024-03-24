@@ -465,9 +465,12 @@ def run_pipeline(df, config, decoy_mode=False):
 
     # Imputation of missing values if requested
     if proc_params['imputation'] and not decoy_mode:
+        k_rows_0 = len(df)
         imputation_value = get_imputation_value(df, col_raw_control, pct=proc_params['imputation_pct'])
-        df = impute_nans(df, cols_raw, imputation_value, proc_params['max_missing'])
+        df = impute_nans(df, cols_raw, imputation_value, proc_params['max_imputation'])
+        k_rows_1 = len(df)
         ui.message(f' * The following imputation value was used to fill NaNs: {round(imputation_value, 2)}', end='\n')
+        ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because of >{proc_params['max_imputation']} imputed value(s).", end='\n')
 
     # Normalize the data if requested
     if proc_params['normalization'] and not decoy_mode:

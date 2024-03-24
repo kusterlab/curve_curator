@@ -398,12 +398,15 @@ def get_js_fig1_yaxis_selection():
             var selected_view = view.value;
             //console.log('Change Figure 1 to ' + selected_view + ' View.');
             //console.log(volcano_params);
+            //console.log(scatter);
 
             // Handle the volcano view with non-corrected p-values
             if (selected_view == 'Volcano'){
                 // Define the p-value selection for the volcano plot
                 if (p_value_toggle.active == 0) {
                     scatter.glyph.y.field = volcano_params.y_col_name_0;
+                    scatter.selection_glyph.y.field = volcano_params.y_col_name_0;
+                    scatter.nonselection_glyph.y.field = volcano_params.y_col_name_0;
                     yaxis.axis_label = volcano_params.y_label_0;
                     fig.y_range.end =  volcano_params.y_range_p0[1];
                     fig.y_range.reset_end =  volcano_params.y_range_p0[1];
@@ -411,6 +414,8 @@ def get_js_fig1_yaxis_selection():
                     threshold_v1.visible = false;
                 } else if (p_value_toggle.active == 1){
                     scatter.glyph.y.field = volcano_params.y_col_name_1;
+                    scatter.selection_glyph.y.field = volcano_params.y_col_name_1;
+                    scatter.nonselection_glyph.y.field = volcano_params.y_col_name_1;
                     yaxis.axis_label =  volcano_params.y_label_1;
                     fig.y_range.end =  volcano_params.y_range_p1[1];
                     fig.y_range.reset_end =  volcano_params.y_range_p1[1];
@@ -447,6 +452,8 @@ def get_js_fig1_yaxis_selection():
             // Handle the potency view
             if (selected_view == 'Potency'){
                 scatter.glyph.y.field = 'pEC50';
+                scatter.selection_glyph.y.field = 'pEC50';
+                scatter.nonselection_glyph.y.field = 'pEC50';
                 fig.title.text = 'Potency Plot';
                 
                 // Adjust the x & y axis
@@ -667,8 +674,8 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     # Depending on which button is active, the corresponding y column is rendered initially.
     bd = volcano_params['button_default']
     fig1_dots = fig1.scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, color=color_mapper, fill_alpha=0.4, size=6, source=source, view=view_selected_curves)
-    fig1_dots.selection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color='black', fill_color=color_mapper, fill_alpha=1)
-    fig1_dots.nonselection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=None, fill_color=color_mapper, fill_alpha=0.2)
+    fig1_dots.selection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color='black', fill_color=color_mapper, fill_alpha=1, size=6)
+    fig1_dots.nonselection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=None, fill_color=color_mapper, fill_alpha=0.2, size=6)
 
     # Add hover tooltips labels to figure 1 for dots
     tooltips = [("Dot", "$index, @Name{%.25s}")]

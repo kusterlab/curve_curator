@@ -13,7 +13,7 @@ from . import thresholding
 from .models import LogisticModel
 
 import bokeh
-from bokeh.models import ColumnDataSource, ColorBar, Range1d, CustomJS, Div, RadioButtonGroup, CDSView, BooleanFilter, TextInput, Button, Circle, \
+from bokeh.models import ColumnDataSource, ColorBar, Range1d, CustomJS, Div, RadioButtonGroup, CDSView, BooleanFilter, TextInput, Button, Scatter, \
     HoverTool, RangeSlider, CheckboxGroup
 from bokeh.models.widgets import Select, DataTable, TableColumn
 from bokeh.transform import linear_cmap
@@ -666,10 +666,9 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     # By default its a volcano plot view, which can be modulated by JS later by the user.
     # Depending on which button is active, the corresponding y column is rendered initially.
     bd = volcano_params['button_default']
-    fig1_dots = fig1.circle(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, color=color_mapper,
-                            fill_alpha=0.4, size=6, source=source, view=view_selected_curves)
-    fig1_dots.selection_glyph = Circle(line_color='black', fill_color=color_mapper, fill_alpha=1)
-    fig1_dots.nonselection_glyph = Circle(line_color=None, fill_color=color_mapper, fill_alpha=0.2)
+    fig1_dots = fig1.scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, color=color_mapper, fill_alpha=0.4, size=6, source=source, view=view_selected_curves)
+    fig1_dots.selection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color='black', fill_color=color_mapper, fill_alpha=1)
+    fig1_dots.nonselection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=None, fill_color=color_mapper, fill_alpha=0.2)
 
     # Add hover tooltips labels to figure 1 for dots
     tooltips = [("Dot", "$index, @Name{%.25s}")]
@@ -717,7 +716,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
 
     # Plot the Curve plot with fit line and scatter points
     fit_line = fig2.multi_line(xs='xs', ys='ys', color="crimson", line_width=5, alpha=0.6, source=curve_fit_source)
-    curve_dots = fig2.circle(x='x', y='y', fill_color='black', fill_alpha=1, source=curve_dots_source, size=7, line_color='black')
+    curve_dots = fig2.scatter(x='x', y='y', fill_color='black', fill_alpha=1, source=curve_dots_source, size=7, line_color='black')
 
     # Add hover tooltips labels to figure 2 for fitted lines and curve dots
     tooltips = [("Curve", "@labels, @names{%.25s}")]

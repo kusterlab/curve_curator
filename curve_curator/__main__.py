@@ -62,12 +62,21 @@ def main():
     ui.welcome()
     ui.breakline()
 
-    # Handle batch process
+    # Handle batch process.
     if args.batch:
         with open(args.path) as f:
             toml_files = f.read().splitlines()
         ui.message(f' * Batch process detected with {len(toml_files)} toml files.')
+        #  Verify that all paths exist in the batch file. If not warn user and exit the program.
+        for tf in toml_files:
+            try:
+                ui.check_path(tf)
+            except (FileNotFoundError, PermissionError, ValueError) as e:
+                ui.error(f' * Your batch file contains a problematic path. Please fix all paths first.')
+                ui.message(e)
+                exit(-1)
         ui.breakline()
+    # Else a the path is a single toml file.
     else:
         toml_files = [args.path]
 

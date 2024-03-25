@@ -1,14 +1,14 @@
-2024-03-24 23:25:51,282 - INFO -  * Executing CurveCurator pipeline version 0.4.1.
-2024-03-24 23:25:51,282 - INFO -  * Reading parameter file of experiment.
-2024-03-24 23:25:51,298 - INFO -  * Loading data file ./ratio_data.txt.
-2024-03-24 23:25:51,423 - INFO -  * 0 curves were removed because of >4 missing value(s).
-2024-03-24 23:25:51,439 - INFO -  * 0 curves were removed because they had no valid control value(s).
-2024-03-24 23:25:51,470 - INFO -  * 219 ratios were clipped into the range [0.0, inf].
-2024-03-24 23:25:51,470 - INFO -  * Fit will use interpolation X values:
-2024-03-24 23:25:51,470 - INFO -    [-9.77, -9.53, -9.29, -9.06, -8.82, -8.58, -8.34, -8.1, -7.86, -7.62, -7.39, -7.15, -6.91, -6.67, -6.43, -6.19, -5.95, -5.72, -5.48, -5.24, -5.0]
-2024-03-24 23:25:51,470 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
-2024-03-24 23:27:28,860 - INFO -  * Fitting curves parameters done !
-2024-03-24 23:27:28,860 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
-2024-03-24 23:27:28,860 - INFO -    alpha=0.05, fc_lim=0.25, s0=0.1283
-2024-03-24 23:27:29,766 - INFO -  * Rendering interactive dashboard using svg backend ...
-2024-03-24 23:27:30,892 - INFO -  * Dashboard successfully rendered.
+2024-03-25 17:49:40,483 - INFO -  * Executing CurveCurator pipeline version 0.5.0.
+2024-03-25 17:49:40,483 - INFO -  * Reading parameter file of experiment.
+2024-03-25 17:49:40,514 - INFO -  * Loading data file ./ratio_data.txt.
+2024-03-25 17:49:40,623 - INFO -  * 0 curves were removed because of >4 missing value(s).
+2024-03-25 17:49:40,654 - INFO -  * 0 curves were removed because they had no valid control value(s).
+2024-03-25 17:49:40,670 - INFO -  * 219 ratios were clipped into the range [0.0, inf].
+2024-03-25 17:49:40,670 - INFO -  * Fit will use interpolation X values:
+2024-03-25 17:49:40,670 - INFO -    [-9.77, -9.53, -9.29, -9.06, -8.82, -8.58, -8.34, -8.1, -7.86, -7.62, -7.39, -7.15, -6.91, -6.67, -6.43, -6.19, -5.95, -5.72, -5.48, -5.24, -5.0]
+2024-03-25 17:49:40,670 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
+2024-03-25 17:51:29,515 - INFO -  * Fitting curves parameters done !
+2024-03-25 17:51:29,515 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
+2024-03-25 17:51:29,515 - INFO -    alpha=0.05, fc_lim=0.25, s0=0.1283
+2024-03-25 17:51:30,687 - INFO -  * Rendering interactive dashboard using svg backend ...
+2024-03-25 17:51:32,092 - INFO -  * Dashboard successfully rendered.

@@ -79,12 +79,26 @@ def build_col_names(col_name, iter_list):
 
 
 def roundup(x):
+    """
+    Rounds up to first significant digit
+    """
+    if x == 0.0:
+        return 0.0
+    elif x < 0.0:
+        return - rounddown(abs(x))
     n_digits = np.floor(np.log10(abs(x)))
     rounded = np.ceil(x / 10**n_digits) * 10**n_digits
     return rounded
 
 
 def rounddown(x):
+    """
+    Rounds down to first significant digit
+    """
+    if x == 0.0:
+        return 0.0
+    elif x < 0.0:
+        return - roundup(abs(x))
     n_digits = np.floor(np.log10(abs(x)))
     rounded = np.ceil(x / 10**(n_digits+1)) * 10**n_digits
     return rounded

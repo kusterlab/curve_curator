@@ -1129,7 +1129,7 @@ def render(df, config):
 
     # Define 'Signal Quality' for visualization and data filtering
     if 'Signal Quality' in df.columns:
-        df['Signal Quality'] = df['Signal Quality'].replace([-np.inf, np.inf, 0], np.nan)
+        df['Signal Quality'] = df['Signal Quality'].replace([-np.inf, np.inf], np.nan)
         min_signal = tool.rounddown(df['Signal Quality'].min() / 1.1)
         max_signal = tool.roundup(df['Signal Quality'].max())
         plot_signal = True
@@ -1137,6 +1137,9 @@ def render(df, config):
             df['Signal Quality'] = df['Signal Quality'].replace(np.nan, 0)
             min_signal, max_signal = -1, 1
             plot_signal = False
+        if min_signal == max_signal:
+            min_signal -= 1
+            max_signal += 1
     else:
         df['Signal Quality'] = 0
         min_signal, max_signal = -1, 1

@@ -1,3 +1,13 @@
+v0.5.0
+- Fixing R2 calculation (#15)
+- RMSE of the curve model is now an output column (#18)
+- Fixing the linear interpolation in combined replicate analysis (#20)
+- Add max_imputation parameter to toml to adjust filtering (#22)
+- Make compatible to bokeh version >=3.4 (#23)
+- Improves robustness of the pipeline (#16, #17, #19, #20, #23)
+- Improves testing and documentation (#16)
+- Minor improvements and fixes
+
 v0.4.0
 - Add more examples and improved documentation (#9)
 - Add clipping option to handle values outside the expected range (#11)

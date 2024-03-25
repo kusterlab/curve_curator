@@ -87,7 +87,7 @@ def estimate_noise_distribution(df, cols, x):
     return noise
 
 
-def simulate_decoys(n_decoys, cols, empirical_noise=None):
+def simulate_decoys(n_decoys, cols, empirical_noise):
     """
     Simulates decoys based on empirical noise distribution
 
@@ -105,6 +105,10 @@ def simulate_decoys(n_decoys, cols, empirical_noise=None):
     pd.DataFrame with simulated decoys
     """
     n_doses = len(cols)
+
+    # Mask zero and implausible variance observations as they are a result of imputations
+    empirical_noise = np.asarray(empirical_noise)
+    empirical_noise[empirical_noise <= 0] = np.nan
 
     # Draw decoy noise distribution from empirical data and make it more robust against outliers in the empirical noise distribution
     max_noise = np.quantile(empirical_noise[np.isfinite(empirical_noise)], q=0.99) * 1.1

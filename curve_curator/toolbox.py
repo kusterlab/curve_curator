@@ -6,8 +6,10 @@
 
 
 # Imports
+import warnings
 import multiprocessing
 import functools
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -77,12 +79,56 @@ def build_col_names(col_name, iter_list):
 
 
 def roundup(x):
+    """
+    Rounds up to first significant digit
+    """
+    if x == 0.0:
+        return 0.0
+    elif x < 0.0:
+        return - rounddown(abs(x))
     n_digits = np.floor(np.log10(abs(x)))
     rounded = np.ceil(x / 10**n_digits) * 10**n_digits
     return rounded
 
 
 def rounddown(x):
+    """
+    Rounds down to first significant digit
+    """
+    if x == 0.0:
+        return 0.0
+    elif x < 0.0:
+        return - roundup(abs(x))
     n_digits = np.floor(np.log10(abs(x)))
     rounded = np.ceil(x / 10**(n_digits+1)) * 10**n_digits
     return rounded
+
+
+def aggregate_xy(x, y, agg_fun=np.nanmean):
+    """
+    Aggregates the y values using an aggregation function based on x grouping.
+
+    Parameters
+    ----------
+    x : array-like
+        List of x values used for grouping.
+    y : array-like
+        List of y values that are aggregated.
+    agg_fun : function
+        Aggregation function that should be applied to y for each group of x. By default np.nanmean.
+
+    Returns
+    -------
+    x_agg : array-like
+        Groups of x.
+    y_agg : array-like
+        aggregated values of y based on x groups.
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings(action="ignore", category=RuntimeWarning)
+        dd = defaultdict(list)
+        for x_i, y_i in zip(x, y):
+            dd[x_i].append(y_i)
+        x_agg = np.fromiter(dd.keys(), dtype=float)
+        y_agg = np.fromiter(map(agg_fun, dd.values()), dtype=float)
+    return x_agg, y_agg

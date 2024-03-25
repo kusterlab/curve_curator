@@ -13,7 +13,7 @@ from . import thresholding
 from .models import LogisticModel
 
 import bokeh
-from bokeh.models import ColumnDataSource, ColorBar, Range1d, CustomJS, Div, RadioButtonGroup, CDSView, BooleanFilter, TextInput, Button, Circle, \
+from bokeh.models import ColumnDataSource, ColorBar, Range1d, CustomJS, Div, RadioButtonGroup, CDSView, BooleanFilter, TextInput, Button, Scatter, \
     HoverTool, RangeSlider, CheckboxGroup
 from bokeh.models.widgets import Select, DataTable, TableColumn
 from bokeh.transform import linear_cmap
@@ -398,12 +398,15 @@ def get_js_fig1_yaxis_selection():
             var selected_view = view.value;
             //console.log('Change Figure 1 to ' + selected_view + ' View.');
             //console.log(volcano_params);
+            //console.log(scatter);
 
             // Handle the volcano view with non-corrected p-values
             if (selected_view == 'Volcano'){
                 // Define the p-value selection for the volcano plot
                 if (p_value_toggle.active == 0) {
                     scatter.glyph.y.field = volcano_params.y_col_name_0;
+                    scatter.selection_glyph.y.field = volcano_params.y_col_name_0;
+                    scatter.nonselection_glyph.y.field = volcano_params.y_col_name_0;
                     yaxis.axis_label = volcano_params.y_label_0;
                     fig.y_range.end =  volcano_params.y_range_p0[1];
                     fig.y_range.reset_end =  volcano_params.y_range_p0[1];
@@ -411,6 +414,8 @@ def get_js_fig1_yaxis_selection():
                     threshold_v1.visible = false;
                 } else if (p_value_toggle.active == 1){
                     scatter.glyph.y.field = volcano_params.y_col_name_1;
+                    scatter.selection_glyph.y.field = volcano_params.y_col_name_1;
+                    scatter.nonselection_glyph.y.field = volcano_params.y_col_name_1;
                     yaxis.axis_label =  volcano_params.y_label_1;
                     fig.y_range.end =  volcano_params.y_range_p1[1];
                     fig.y_range.reset_end =  volcano_params.y_range_p1[1];
@@ -447,6 +452,8 @@ def get_js_fig1_yaxis_selection():
             // Handle the potency view
             if (selected_view == 'Potency'){
                 scatter.glyph.y.field = 'pEC50';
+                scatter.selection_glyph.y.field = 'pEC50';
+                scatter.nonselection_glyph.y.field = 'pEC50';
                 fig.title.text = 'Potency Plot';
                 
                 // Adjust the x & y axis
@@ -666,10 +673,9 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     # By default its a volcano plot view, which can be modulated by JS later by the user.
     # Depending on which button is active, the corresponding y column is rendered initially.
     bd = volcano_params['button_default']
-    fig1_dots = fig1.circle(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, color=color_mapper,
-                            fill_alpha=0.4, size=6, source=source, view=view_selected_curves)
-    fig1_dots.selection_glyph = Circle(line_color='black', fill_color=color_mapper, fill_alpha=1)
-    fig1_dots.nonselection_glyph = Circle(line_color=None, fill_color=color_mapper, fill_alpha=0.2)
+    fig1_dots = fig1.scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, color=color_mapper, fill_alpha=0.4, size=6, source=source, view=view_selected_curves)
+    fig1_dots.selection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color='black', fill_color=color_mapper, fill_alpha=1, size=6)
+    fig1_dots.nonselection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=None, fill_color=color_mapper, fill_alpha=0.2, size=6)
 
     # Add hover tooltips labels to figure 1 for dots
     tooltips = [("Dot", "$index, @Name{%.25s}")]
@@ -717,7 +723,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
 
     # Plot the Curve plot with fit line and scatter points
     fit_line = fig2.multi_line(xs='xs', ys='ys', color="crimson", line_width=5, alpha=0.6, source=curve_fit_source)
-    curve_dots = fig2.circle(x='x', y='y', fill_color='black', fill_alpha=1, source=curve_dots_source, size=7, line_color='black')
+    curve_dots = fig2.scatter(x='x', y='y', fill_color='black', fill_alpha=1, source=curve_dots_source, size=7, line_color='black')
 
     # Add hover tooltips labels to figure 2 for fitted lines and curve dots
     tooltips = [("Curve", "@labels, @names{%.25s}")]
@@ -1123,7 +1129,7 @@ def render(df, config):
 
     # Define 'Signal Quality' for visualization and data filtering
     if 'Signal Quality' in df.columns:
-        df['Signal Quality'] = df['Signal Quality'].replace([-np.inf, np.inf, 0], np.nan)
+        df['Signal Quality'] = df['Signal Quality'].replace([-np.inf, np.inf], np.nan)
         min_signal = tool.rounddown(df['Signal Quality'].min() / 1.1)
         max_signal = tool.roundup(df['Signal Quality'].max())
         plot_signal = True
@@ -1131,6 +1137,9 @@ def render(df, config):
             df['Signal Quality'] = df['Signal Quality'].replace(np.nan, 0)
             min_signal, max_signal = -1, 1
             plot_signal = False
+        if min_signal == max_signal:
+            min_signal -= 1
+            max_signal += 1
     else:
         df['Signal Quality'] = 0
         min_signal, max_signal = -1, 1

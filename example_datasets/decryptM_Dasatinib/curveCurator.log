@@ -1,14 +1,15 @@
-2023-12-27 11:43:35,143 - INFO -  * Executing CurveCurator pipeline version 0.4.0.
-2023-12-27 11:43:35,143 - INFO -  * Reading parameter file of experiment.
-2023-12-27 11:43:35,164 - INFO -  * Loading data file ./evidence.txt.
-2023-12-27 11:43:36,296 - INFO -  * 64 curves were removed because of >4 missing value(s).
-2023-12-27 11:43:37,618 - INFO -  * The following imputation value was used to fill NaNs: 6329.66
-2023-12-27 11:43:37,705 - INFO -  * The following normalization factors were applied:
-2023-12-27 11:43:37,706 - INFO -    {'Raw 1': 0.58, 'Raw 2': 0.13, 'Raw 3': 0.2, 'Raw 4': -0.6, 'Raw 5': -0.31, 'Raw 6': 0.19, 'Raw 7': 0.24, 'Raw 8': -0.19, 'Raw 9': -0.08, 'Raw 10': -0.14}
-2023-12-27 11:43:37,732 - INFO -  * 0 curves were removed because they had no valid control value(s).
-2023-12-27 11:43:37,740 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
-2023-12-27 11:45:59,715 - INFO -  * Fitting curves parameters done !
-2023-12-27 11:45:59,718 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
-2023-12-27 11:45:59,720 - INFO -    alpha=0.05, fc_lim=0.45, s0=0.2141
-2023-12-27 11:46:01,893 - INFO -  * Rendering interactive dashboard using webgl backend ...
-2023-12-27 11:46:03,352 - INFO -  * Dashboard successfully rendered.
+2024-03-25 17:34:50,026 - INFO -  * Executing CurveCurator pipeline version 0.5.0.
+2024-03-25 17:34:50,026 - INFO -  * Reading parameter file of experiment.
+2024-03-25 17:34:50,057 - INFO -  * Loading data file ./evidence.txt.
+2024-03-25 17:34:51,463 - INFO -  * 64 curves were removed because of >4 missing value(s).
+2024-03-25 17:34:53,432 - INFO -  * The following imputation value was used to fill NaNs: 6329.66
+2024-03-25 17:34:53,432 - INFO -  * 74 curves were removed because of >4 imputed value(s).
+2024-03-25 17:34:53,541 - INFO -  * The following normalization factors were applied:
+2024-03-25 17:34:53,541 - INFO -    {'Raw 1': 0.58, 'Raw 2': 0.13, 'Raw 3': 0.2, 'Raw 4': -0.6, 'Raw 5': -0.31, 'Raw 6': 0.19, 'Raw 7': 0.24, 'Raw 8': -0.19, 'Raw 9': -0.08, 'Raw 10': -0.14}
+2024-03-25 17:34:53,581 - INFO -  * 0 curves were removed because they had no valid control value(s).
+2024-03-25 17:34:53,591 - INFO -  * Fitting curves parameters by standard OLS with 5 cores:
+2024-03-25 17:37:28,308 - INFO -  * Fitting curves parameters done !
+2024-03-25 17:37:28,324 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
+2024-03-25 17:37:28,324 - INFO -    alpha=0.05, fc_lim=0.45, s0=0.2141
+2024-03-25 17:37:31,011 - INFO -  * Rendering interactive dashboard using webgl backend ...
+2024-03-25 17:37:32,855 - INFO -  * Dashboard successfully rendered.

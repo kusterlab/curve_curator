@@ -252,7 +252,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     y_control = 1
     weights = fit_params.get('weights')
 
-    # Mask implausible y values and apply to x, y, weights
+    # Mask implausible and missing y values and apply the mask to x, y, weights
     finite_values = np.isfinite(y_data)
     if not all(finite_values):
         y_data = y_data[finite_values]
@@ -270,8 +270,10 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         return 19 * (np.nan,)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
+    # If replicated doses exist, they must be aggregated before the linear interpolation is done to prevent arbitrary steps in the function.
     if fit_params.get('interpolation', False):
-        f_linear = interpolate.interp1d(x_data, y_data, kind='linear')
+        x_aggregated, y_aggregated = tool.aggregate_xy(x_data, y_data, agg_fun=np.mean)
+        f_linear = interpolate.interp1d(x_aggregated, y_aggregated, kind='linear', assume_sorted=True)
         x_linear = fit_params['x_interpolated']
         # Mask terminal missing values
         if not all(finite_values):
@@ -279,7 +281,10 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         # Add the values to the fit variables
         x_fit = np.append(x, x_linear)
         y_fit = np.append(y, f_linear(x_linear))
+        # No weights are possible in the interpolation mode because they are difficult to compute in a meaningful way.
         weights = None
+
+    # Else the fit values correspond to the actual data only.
     else:
         x_fit = x
         y_fit = y
@@ -292,8 +297,8 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         M0.fit_mle(x_fit, y_fit)
     else:
         raise ValueError(f"Fit strategy type=\"{fit_params['type']}\" is not implemented.")
-    intercept = M0.get_all_parameters()['intercept']
-    rmse = M0.calculate_rmse(x_fit, y_fit)
+    m0_intercept = M0.get_all_parameters()['intercept']
+    m0_rmse = M0.calculate_rmse(x, y)
 
     # Fit the unrestricted model with ordinary least squares (ols)
     if fit_params['type'] == 'OLS':
@@ -303,7 +308,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         elif fit_params['speed'] == 'standard':
             M1.efficiently_fit_ols(x_fit, y_fit, noise=M0.noise, weights=weights)
         elif fit_params['speed'] == 'exhaustive':
-            M1.extensively_fit_guesses_mle(x_fit, y_fit, noise=M0.noise)
+            M1.extensively_fit_guesses_ols(x_fit, y_fit, noise=M0.noise)
         elif fit_params['speed'] == 'basinhopping':
             M1.find_best_guess_ols(x_fit, y_fit, noise=M0.noise, weights=weights)
             M1.basinhopping_ols(x_fit, y_fit, weights=weights)
@@ -326,6 +331,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
 
     # Get extra parameter
     M1.calculate_parameter_error(x, y)
+    rmse = M1.calculate_rmse(x, y)
     r2 = M1.calculate_r2(x, y)
     fold_change = M1.calculate_fold_change(x[1:], to_control=fit_params['control_fold_change'])
     auc = M1.get_auc(x)
@@ -347,7 +353,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     p_opt = M1.get_all_parameters().values()
     p_err = M1.get_params_error().values()
 
-    return (*p_opt, fold_change, auc, r2, M1.noise, *p_err, intercept, M0.noise, rmse, M1.likelihood, M0.likelihood, f_statistic, p_values)
+    return (*p_opt, fold_change, auc, rmse, r2, M1.noise, *p_err, m0_intercept, M0.noise, m0_rmse, M1.likelihood, M0.likelihood, f_statistic, p_values)
 
 
 def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
@@ -410,7 +416,7 @@ def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
                                          axis=1)
 
     # Typecast - apply output to DataFrame with the following column names
-    fit_cols = ['pEC50', 'Curve Slope', 'Curve Front', 'Curve Back', 'Curve Fold Change', 'Curve AUC', 'Curve R2', 'Curve Noise',
+    fit_cols = ['pEC50', 'Curve Slope', 'Curve Front', 'Curve Back', 'Curve Fold Change', 'Curve AUC', 'Curve RMSE', 'Curve R2', 'Curve Noise',
                 'pEC50 Error', 'Curve Slope Error', 'Curve Front Error', 'Curve Back Error',
                 'Null Model', 'Null Noise', 'Null RMSE', 'Curve Likelihood', 'Curve Null Likelihood', 'Curve F_Value', 'Curve P_Value']
     df[fit_cols] = pd.DataFrame(data=fits.tolist(), columns=fit_cols, index=df.index)
@@ -459,9 +465,12 @@ def run_pipeline(df, config, decoy_mode=False):
 
     # Imputation of missing values if requested
     if proc_params['imputation'] and not decoy_mode:
+        k_rows_0 = len(df)
         imputation_value = get_imputation_value(df, col_raw_control, pct=proc_params['imputation_pct'])
-        df = impute_nans(df, cols_raw, imputation_value, proc_params['max_missing'])
+        df = impute_nans(df, cols_raw, imputation_value, proc_params['max_imputation'])
+        k_rows_1 = len(df)
         ui.message(f' * The following imputation value was used to fill NaNs: {round(imputation_value, 2)}', end='\n')
+        ui.message(f" * {k_rows_0 - k_rows_1} curves were removed because of >{proc_params['max_imputation']} imputed value(s).", end='\n')
 
     # Normalize the data if requested
     if proc_params['normalization'] and not decoy_mode:
@@ -507,7 +516,7 @@ def run_pipeline(df, config, decoy_mode=False):
     negative_count = (df[cols_ratio] < 0).sum().sum()
     if negative_count > 0:
         ui.warning(f" * {negative_count} negative ratios were detected in the data matrix. CurveCurator expects the y response ratios to be >= 0." +
-                   f"Models will be fit but will never go < 0. Please consider using the 'clip_ratios' parameter to confine the ratios into a defined range. e.g. (0, inf).", end='\n')
+                   f"Models will be fit but will never go < 0. Please consider using the 'ratio_range' parameter to confine the ratios into a defined range. e.g. (0, inf).", end='\n')
 
     # Sort concentrations and observations from low to high dose
     sorted_doses = np.argsort(drug_log_concs)

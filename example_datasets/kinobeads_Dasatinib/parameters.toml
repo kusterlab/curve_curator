@@ -1,0 +1,37 @@
+['Meta']
+# Sample information
+id = ' '								# Unique dataset identifier.
+description = 'Dasatinib Pulldown'					# Short description about the experiment.	
+condition = 'Dasatinib'							# The condition that was tested. e.g. molecule name.
+treatment_time = ' '							# treatment time.
+
+['Experiment']
+# Experiment information
+experiments = ['DMSO', '3nM', '10nM', '30nM', '100nM', '300nM', '1000nM', '3000nM', '30000nM']				# The experiment ids within a experiments
+doses = [0.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0, 30000.0] 	# The doses corresponding to the channel indices
+dose_scale = '1e-9'							# The scaling factor for the doses in scientific notation
+dose_unit = 'M'								# The base unit of the doses
+control_experiment = 'DMSO'						# <N> The index of the control channel to which ratios will be calculated
+measurement_type= 'LFQ'							# The measurement type <LFQ|TMT|DIA|OTHER>
+data_type = 'PROTEIN'							# The data type <PEPTIDE|PROTEIN|OTHER>
+search_engine = 'MAXQUANT'						# The search engine <MAXQUANT|DIANN|OTHER>
+search_engine_version = '1.5.3.30'					# The search engine version
+
+['Paths']
+# The paths needed for import. They must be relative to the toml files
+input_file = './proteinGroups.txt'					# Relative path to the imput file holding the data
+
+['Processing']
+# Paramters for the datanalysis pipeline
+available_cores = 2							# <N> number of cores for parallelization
+max_missing = 7								# <N> number of measured intensities that are allowed to be 0 per curve
+imputation = true							# <true | false> impute missing values
+normalization = false							# Median centric normalization
+
+['Curve Fit']
+interpolation = true
+
+['F Statistic']
+alpha = 0.1								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis)
+fc_lim = 0.5								# Absolute Log2 Fold Change limit for a biologically meaningful curve (SAM-Analysis)
+optimized_dofs = true							# <true | false> Use the optimized degrees of freedom for correct p-value estimation.

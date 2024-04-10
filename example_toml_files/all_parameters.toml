@@ -5,13 +5,14 @@ description = 'Some experiment'						# Short description about the experiment.
 condition = 'DrugX'							# The condition that was tested. e.g. molecule name.
 treatment_time = '24 h'							# treatment time.
 
+
 ['Experiment']
 # Experiment information
-experiments = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]			# The experiment ids within an experiments.
+experiments = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]			# The experiment ids within an experiments. Can also be a list of strings ['A', 'B', 'C', ..].
 doses = [0.0, 0.03, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 10000.0] # The doses corresponding to the channel indices.
 dose_scale = '1e-9'							# The scaling factor for the doses in scientific notation.
 dose_unit = 'M'								# The base unit of the doses.
-control_experiment = 1							# <N> The index of the control channel to which ratios will be calculated. If multiple do [<N>, <N>, ..].
+control_experiment = [1]						# [<id>] The experiment id(s) that are the control(s) to which ratios are calculated. If multiple controls exist, do [<id>, <id>, ..].
 measurement_type= 'TMT'							# The measurement type <LFQ|TMT|DIA|OTHER>.
 data_type = 'PEPTIDE'							# The data type <PEPTIDE|PROTEIN|OTHER>.
 search_engine = 'MAXQUANT'						# The search engine <MAXQUANT|DIANN|PD|MSFRAGGER|OTHER>.
@@ -38,6 +39,7 @@ imputation = true							# <true | false> impute missing values.
 normalization = true							# <true | false> median centering of log-normalized values.
 ratio_range = [0.0, +inf]						# [<lower>, <upper>] The range of values the response ratios can have. A value outside the range will be clipped to the lower or upper boundary value.
 
+
 ['Curve Fit']
 front = 1.0								# <N> This will fix the curve front to the value N. 
 slope = 1.0								# <N> This will fix the curve slope to the value N.
@@ -49,6 +51,7 @@ speed									# <'fast'|'standard'|'exhaustive'|'basinhopping'> The approach of 
 max_iterations								# <N> This will limit the number of iterations to N before parameter estimation is terminated.
 control_fold_change = True						# <true | false> Calculate the curve fold change relative to the control.
 interpolation = True							# <true | false> Use interpolation helper points for robust curve fitting.
+
 
 ['F Statistic']
 alpha = 0.05								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis).
@@ -63,6 +66,7 @@ mtc_method								# Multiple testing correction method. See statsmodel for avail
 not_rmse_limit = 0.1							# <N> specifies the root-mean-squared error threshold for the not classification.
 not_p_limit								# <N> specifies an additional maximum p-value threshold for the not classification.
 decoy_ratio = 1.0							# <N> specifies the target decoy ratio.
+
 
 ['Dashboard']
 backend = 'svg'								# <'webgl'|'svg'|'canvas'> Specifies the HTML output backend.

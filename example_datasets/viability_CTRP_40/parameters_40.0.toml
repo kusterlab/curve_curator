@@ -7,11 +7,11 @@ treatment_time = '3 d'							# treatment time.
 
 ['Experiment']
 # Experiment information
-experiments = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]				# The experiment ids within a experiments
+experiments = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]	# The experiment ids within a experiments
 doses = [0.0, 0.0012, 0.0024, 0.0049, 0.0097, 0.019, 0.039, 0.078, 0.16, 0.31, 0.62, 1.2, 2.5, 5.0, 10.0, 20.0, 40.0]		# The doses corresponding to the channel indices
 dose_scale = '1e-6'							# The scaling factor for the doses in scientific notation
 dose_unit = 'M'								# The base unit of the doses
-control_experiment = 0							# <N> The index of the control channel to which ratios will be calculated
+control_experiment = [0]						# [<id>] The experiment id(s) that are the control(s) to which ratios are calculated. If multiple controls exist, do [<id>, <id>, ..].
 measurement_type= 'OTHER'						# The measurement type <LFQ|TMT|DIA|OTHER>
 data_type = 'OTHER'							# The data type <PEPTIDE|PROTEIN|OTHER>
 search_engine = 'OTHER'							# The search engine <MAXQUANT|DIANN|OTHER>

@@ -5,13 +5,14 @@ description = 'Some experiment'						# Short description about the experiment.
 condition = 'DrugX'							# The condition that was tested. e.g. molecule name.
 treatment_time = '24 h'							# treatment time.
 
+
 ['Experiment']
 # Experiment information
-experiments = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]			# The experiment ids within an experiments.
+experiments = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]			# The experiment ids within an experiments. Can also be a list of strings ['A', 'B', 'C', ..].
 doses = [0.0, 0.03, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 10000.0] # The doses corresponding to the channel indices.
 dose_scale = '1e-9'							# The scaling factor for the doses in scientific notation.
 dose_unit = 'M'								# The base unit of the doses.
-control_experiment = 1							# <N> The index of the control channel to which ratios will be calculated. If multiple do [<N>, <N>, ..].
+control_experiment = [1]						# [<id>] The experiment id(s) that are the control(s) to which ratios are calculated. If multiple controls exist, do [<id>, <id>, ..].
 
 
 ['Paths']

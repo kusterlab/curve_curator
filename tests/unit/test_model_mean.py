@@ -128,6 +128,17 @@ class TestCoreFunction:
         y_expected = np.full_like(self.x, 2)
         np.testing.assert_almost_equal(y, y_expected, decimal=3)
 
+    def test_predict_function(self):
+        M = MeanModel(**self.params)
+        y = M.predict(self.x)
+        y_expected = np.full_like(self.x, 1)
+        np.testing.assert_almost_equal(y, y_expected, decimal=3)
+
+    def test_predict_function_error(self):
+        M = MeanModel()
+        with pytest.raises(ValueError):
+            y = M.predict(self.x)
+
 
 class TestSetBoundaries:
     x = np.array([-9.0, -8.0, -7.0, -6.0, -5.0])

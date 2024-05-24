@@ -424,6 +424,17 @@ class _Model:
         self.set_fitted_params(best_params)
         return results[best_params]
 
+    def predict(self, x):
+        """
+        Predicts the model(x) after data was fitted to some observations.
+        """
+        params = self.get_all_parameters()
+        undefined_params = {k for k, v in params.items() if np.isnan(v)}
+        if any(undefined_params):
+            raise ValueError(f'The following model parameter(s) are not defined yet: {undefined_params}. Please fit or set them first.')
+        y = self(x, **params)
+        return y
+
 
 class MeanModel(_Model):
     """

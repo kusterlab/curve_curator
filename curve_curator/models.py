@@ -1163,7 +1163,7 @@ class LogisticModel(_Model):
                 best_guess, best_likelihood = guess, guess_likelihood
         return self.set_initial_guess(*best_guess)
 
-    def find_best_guess_ols(self, x, y, noise, weights=None):
+    def find_best_guess_ols(self, x, y, noise=None, weights=None):
         """
         Find the best starting guess for OLS estimation among the alternative guesses given x and y data and some noise estimate.
         Weights can be applied if desired.
@@ -1174,7 +1174,7 @@ class LogisticModel(_Model):
             Input array with drug concentrations in log10 space.
         y : array-like
             observes y-values.
-        noise : float
+        noise : float, optional
             expected noise of the curve.
         weights : array-like, optional
             A weight for each (x,y)-pair. A bigger number corresponds to a higher importance. Default is None.
@@ -1228,7 +1228,7 @@ class LogisticModel(_Model):
         self.noise = best_fit['n_opt']
         self.likelihood = best_fit['cost']
 
-    def extensively_fit_guesses_ols(self, x, y, noise, slopes=None, weights=None):
+    def extensively_fit_guesses_ols(self, x, y, noise=None, slopes=None, weights=None):
         """
         Optimize all alternative guesses in combination to different slopes using OLS estimation and saves the best solution.
         This increases the chances of finding the global minimum and not getting stuck in some local one at the cost of time.
@@ -1239,7 +1239,7 @@ class LogisticModel(_Model):
             Input array with drug concentrations in log10 space.
         y : array-like
             observes y-values.
-        noise : float
+        noise : float, optional
             expected noise of the curve.
         slopes : list of floats, optional
             The different slope values that should be tested during the extensive fitting procedure.
@@ -1302,7 +1302,7 @@ class LogisticModel(_Model):
         self.noise = best_fit['n_opt']
         self.likelihood = best_fit['cost']
 
-    def efficiently_fit_ols(self, x, y, noise, slopes=None, weights=None):
+    def efficiently_fit_ols(self, x, y, noise=None, slopes=None, weights=None):
         """
         Fit using OLS estimation and saves the best solution. It uses the best alternative guess with three different slopes.
         This is the best compromise between speed and proportion of reaching the best possible fit.
@@ -1313,7 +1313,7 @@ class LogisticModel(_Model):
             Input array with drug concentrations in log10 space.
         y : array-like
             observes y-values.
-        noise : float
+        noise : float, optional
             expected noise of the curve.
         slopes : list of floats, optional
             The different slope values that should be tested during the extensive fitting procedure.
@@ -1325,7 +1325,7 @@ class LogisticModel(_Model):
         if slopes is None:
             slopes = [SLOPE_LIMITS[0], 1.0, SLOPE_LIMITS[1]]
         # From best guess start with different slopes to overcome local minimums
-        best_guess = self.find_best_guess_ols(x, y, noise, weights=weights)
+        best_guess = self.find_best_guess_ols(x, y, noise=noise, weights=weights)
         best_fit = {'cost': np.inf, 'p_opt': {}, 'g_opt': {}}
         for slope in slopes:
             best_guess['slope'] = slope

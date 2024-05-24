@@ -337,6 +337,7 @@ class _Model:
         Fits the free parameters of the model to the given data using maximum likelihood estimation.
         Minimization is performed using the gradient-free Nelder-Mead algorithm from scipy.
         Fitted parameters are saved to the object.
+        It is required that an initial guess has been made because the fitting procedure needs to start somewhere.
 
         Parameters
         ----------
@@ -349,6 +350,9 @@ class _Model:
         -------
         -log_likelihood at the minimum
         """
+        if not self.guess:
+            raise ValueError('Please provide a guess before fitting.')
+        
         llf = self.log_likelihood_function(x, y)
         parameter_names = list(self.get_free_params().keys()) + ['noise']
         guess = np.array([self.guess[pn] for pn in parameter_names])
@@ -364,6 +368,7 @@ class _Model:
         Fits the free parameters of the model to the given data using ordinary least squares estimation.
         Minimization is performed using the L-BFGS-B algorithm from scipy supplemented with the OLS Jacobian matrix.
         Fitted parameters are saved to the object.
+        It is required that an initial guess has been made because the fitting procedure needs to start somewhere.
 
         Parameters
         ----------
@@ -378,6 +383,9 @@ class _Model:
         -------
         OLS cost value at the minimum.
         """
+        if not self.guess:
+            raise ValueError('Please provide a guess before fitting.')
+
         parameter_names = list(self.get_free_params().keys())
         guess = np.array([self.guess[pn] for pn in parameter_names])
         bounds = np.array([self.bounds.get(pn, (-np.inf, np.inf)) for pn in parameter_names])
@@ -393,6 +401,7 @@ class _Model:
         To find the global minimum the basin-hopping global optimization algorithm from scipy is applied.
         All solutions are stored in the result_memory and only the best solution is returned.
         Local minimization is performed using the L-BFGS-B algorithm from scipy supplemented with the OLS Jacobian matrix.
+        It is required that an initial guess has been made because the fitting procedure needs to start somewhere.
 
         Parameters
         ----------
@@ -411,6 +420,10 @@ class _Model:
             def callback(params, fun, accept):
                 d[tuple(params)] = fun
             return callback
+
+        if not self.guess:
+            raise ValueError('Please provide a guess before fitting.')
+
         parameter_names = list(self.get_free_params().keys())
         guess = np.array([self.guess[pn] for pn in parameter_names])
         bounds = np.array([self.bounds.get(pn, (-np.inf, np.inf)) for pn in parameter_names])

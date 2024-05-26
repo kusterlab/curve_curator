@@ -179,3 +179,16 @@ class TestRoundingDown:
         x = 11.1
         expected = 10.0
         assert expected == toolbox.rounddown(x)
+
+
+class TestColNameGenerator:
+
+    def test_with_numbers(self):
+        expected = ['Test 0', 'Test 1', 'Test 2', 'Test 3', 'Test 4', 'Test 5']
+        out = toolbox.build_col_names('Test {}', range(6))
+        assert all(out == expected)
+
+    def test_with_strings(self):
+        expected = ['Test A', 'Test B', 'Test C', 'Test D']
+        out = toolbox.build_col_names('Test {}', [*'ABCD'])
+        assert all(out == expected)

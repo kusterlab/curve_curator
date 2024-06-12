@@ -32,12 +32,15 @@ def clean_modified_sequence(mod_seq):
         r'\(Acetyl \(Protein N-term\)\)':  '(ac)',
         r'M\(Oxidation \(M\)\)': 'M',
         r'M\(ox\)': 'M',
+        r'M\(UniMod\:35\)': 'M',
         r'pS': 'S(ph)',
         r'pT': 'T(ph)',
         r'pY': 'Y(ph)',
         r'\(Phospho \(STY\)\)': '(ph)',
         r'\(Acetyl \(K\)\)': '(ac)',
         r'\(GG \(K\)\)': '(ub)',
+        r'C\(UniMod\:4\)': 'C',
+
     }
     for old, new in mappings.items():
         mod_seq = mod_seq.str.replace(old, new, regex=True)
@@ -141,6 +144,19 @@ def load_diann_lqf_proteins(path, version, unique_cols, sum_cols=[], first_cols=
     df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
                               concat_cols=concat_cols)
     return df
+
+
+def load_diann_lqf_peptide(path, version, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+    Mapper = DiannMap(version)
+    df = pd.read_csv(path, sep='\t', low_memory=False)
+    df.columns = Mapper.rename_general_columns(df.columns)
+    df.columns = Mapper.rename_intensity_columns(df.columns)
+    df['Modified sequence'] = clean_modified_sequence(df['Modified sequence'])
+    df = clean_rows(df)
+    df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+                              concat_cols=concat_cols)
+    return df
+
 
 #
 # MaxQuant
@@ -346,6 +362,14 @@ def load(config):
     if (measurement_type == 'DIA') and (search_engine == 'DIANN') and (data_type == 'PROTEIN'):
         unique_cols = ['Genes']
         df = load_diann_lqf_proteins(path, search_engine_version, unique_cols=unique_cols, sum_cols=raw_cols)
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+
+    elif (measurement_type == 'DIA') and (search_engine == 'DIANN') and (data_type == 'PEPTIDE'):
+        # TODO: make this to dictionary
+        unique_cols = ['Modified sequence']
+        first_cols = ['Genes', 'Proteins']
+        df = load_diann_lqf_peptide(path, search_engine_version, unique_cols=unique_cols, first_cols=first_cols, sum_cols=raw_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
 

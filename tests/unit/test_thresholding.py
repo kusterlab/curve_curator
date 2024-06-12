@@ -218,5 +218,46 @@ class TestFCtoPValueMap:
         pass
 
 
+class TestSAMcorrection:
+
+    def test_single_value_input(self):
+        f_values = 10
+        curve_fold_change = 1
+        s0 = 0
+        f_adj = thresholding.sam_correction(f_values, curve_fold_change, s0)
+        assert np.isclose(f_values, f_adj)
+
+    def test_array_input(self):
+        f_values = [10, 1, 0]
+        curve_fold_changes = [1, 2, 3]
+        s0s = [0, 0, 0]
+        f_adjs = thresholding.sam_correction(f_values, curve_fold_changes, s0s)
+        assert all(np.isclose(f_values, f_adjs))
+
+    def test_different_s0(self):
+        f_value = 100
+        curve_fold_change = 1
+        s0s = [np.inf, 0.9, 0.1, 0]
+        expected_f_adjs = [  0,   1,  25, 100]
+        f_adjs = thresholding.sam_correction(f_value, curve_fold_change, s0s)
+        assert all(np.isclose(expected_f_adjs, f_adjs))
+
+    def test_different_fold_changes(self):
+        f_value = 100
+        curve_fold_changes = [np.inf, 10, 1/.9, 0]
+        s0 = 1
+        expected_f_adjs = [100,  25,   1,   0]
+        f_adjs = thresholding.sam_correction(f_value, curve_fold_changes, s0)
+        assert all(np.isclose(expected_f_adjs, f_adjs))
+
+    def test_different_fvalues(self):
+        f_values = [np.inf, 400, 100, 25, 4, 0]
+        curve_fold_change = 1
+        s0 = 0.1
+        expected_f_adjs = np.array([1/0.1,  1/0.15, 1/0.2, 1/0.3, 1/0.6, 0])**2
+        f_adjs = thresholding.sam_correction(f_values, curve_fold_change, s0)
+        assert all(np.isclose(expected_f_adjs, f_adjs))
+
+
 class TestDefineRegulatedCurves:
     pass

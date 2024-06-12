@@ -337,6 +337,7 @@ class _Model:
         Fits the free parameters of the model to the given data using maximum likelihood estimation.
         Minimization is performed using the gradient-free Nelder-Mead algorithm from scipy.
         Fitted parameters are saved to the object.
+        It is required that an initial guess has been made because the fitting procedure needs to start somewhere.
 
         Parameters
         ----------
@@ -349,6 +350,9 @@ class _Model:
         -------
         -log_likelihood at the minimum
         """
+        if not self.guess:
+            raise ValueError('Please provide a guess before fitting.')
+        
         llf = self.log_likelihood_function(x, y)
         parameter_names = list(self.get_free_params().keys()) + ['noise']
         guess = np.array([self.guess[pn] for pn in parameter_names])
@@ -364,6 +368,7 @@ class _Model:
         Fits the free parameters of the model to the given data using ordinary least squares estimation.
         Minimization is performed using the L-BFGS-B algorithm from scipy supplemented with the OLS Jacobian matrix.
         Fitted parameters are saved to the object.
+        It is required that an initial guess has been made because the fitting procedure needs to start somewhere.
 
         Parameters
         ----------
@@ -378,6 +383,9 @@ class _Model:
         -------
         OLS cost value at the minimum.
         """
+        if not self.guess:
+            raise ValueError('Please provide a guess before fitting.')
+
         parameter_names = list(self.get_free_params().keys())
         guess = np.array([self.guess[pn] for pn in parameter_names])
         bounds = np.array([self.bounds.get(pn, (-np.inf, np.inf)) for pn in parameter_names])
@@ -393,6 +401,7 @@ class _Model:
         To find the global minimum the basin-hopping global optimization algorithm from scipy is applied.
         All solutions are stored in the result_memory and only the best solution is returned.
         Local minimization is performed using the L-BFGS-B algorithm from scipy supplemented with the OLS Jacobian matrix.
+        It is required that an initial guess has been made because the fitting procedure needs to start somewhere.
 
         Parameters
         ----------
@@ -411,6 +420,10 @@ class _Model:
             def callback(params, fun, accept):
                 d[tuple(params)] = fun
             return callback
+
+        if not self.guess:
+            raise ValueError('Please provide a guess before fitting.')
+
         parameter_names = list(self.get_free_params().keys())
         guess = np.array([self.guess[pn] for pn in parameter_names])
         bounds = np.array([self.bounds.get(pn, (-np.inf, np.inf)) for pn in parameter_names])
@@ -423,6 +436,17 @@ class _Model:
         self.set_initial_guess(*best_params, self.noise)
         self.set_fitted_params(best_params)
         return results[best_params]
+
+    def predict(self, x):
+        """
+        Predicts the model(x) after data was fitted to some observations.
+        """
+        params = self.get_all_parameters()
+        undefined_params = {k for k, v in params.items() if np.isnan(v)}
+        if any(undefined_params):
+            raise ValueError(f'The following model parameter(s) are not defined yet: {undefined_params}. Please fit or set them first.')
+        y = self(x, **params)
+        return y
 
 
 class MeanModel(_Model):
@@ -1163,7 +1187,7 @@ class LogisticModel(_Model):
                 best_guess, best_likelihood = guess, guess_likelihood
         return self.set_initial_guess(*best_guess)
 
-    def find_best_guess_ols(self, x, y, noise, weights=None):
+    def find_best_guess_ols(self, x, y, noise=None, weights=None):
         """
         Find the best starting guess for OLS estimation among the alternative guesses given x and y data and some noise estimate.
         Weights can be applied if desired.
@@ -1174,7 +1198,7 @@ class LogisticModel(_Model):
             Input array with drug concentrations in log10 space.
         y : array-like
             observes y-values.
-        noise : float
+        noise : float, optional
             expected noise of the curve.
         weights : array-like, optional
             A weight for each (x,y)-pair. A bigger number corresponds to a higher importance. Default is None.
@@ -1228,7 +1252,7 @@ class LogisticModel(_Model):
         self.noise = best_fit['n_opt']
         self.likelihood = best_fit['cost']
 
-    def extensively_fit_guesses_ols(self, x, y, noise, slopes=None, weights=None):
+    def extensively_fit_guesses_ols(self, x, y, noise=None, slopes=None, weights=None):
         """
         Optimize all alternative guesses in combination to different slopes using OLS estimation and saves the best solution.
         This increases the chances of finding the global minimum and not getting stuck in some local one at the cost of time.
@@ -1239,7 +1263,7 @@ class LogisticModel(_Model):
             Input array with drug concentrations in log10 space.
         y : array-like
             observes y-values.
-        noise : float
+        noise : float, optional
             expected noise of the curve.
         slopes : list of floats, optional
             The different slope values that should be tested during the extensive fitting procedure.
@@ -1302,7 +1326,7 @@ class LogisticModel(_Model):
         self.noise = best_fit['n_opt']
         self.likelihood = best_fit['cost']
 
-    def efficiently_fit_ols(self, x, y, noise, slopes=None, weights=None):
+    def efficiently_fit_ols(self, x, y, noise=None, slopes=None, weights=None):
         """
         Fit using OLS estimation and saves the best solution. It uses the best alternative guess with three different slopes.
         This is the best compromise between speed and proportion of reaching the best possible fit.
@@ -1313,7 +1337,7 @@ class LogisticModel(_Model):
             Input array with drug concentrations in log10 space.
         y : array-like
             observes y-values.
-        noise : float
+        noise : float, optional
             expected noise of the curve.
         slopes : list of floats, optional
             The different slope values that should be tested during the extensive fitting procedure.
@@ -1325,7 +1349,7 @@ class LogisticModel(_Model):
         if slopes is None:
             slopes = [SLOPE_LIMITS[0], 1.0, SLOPE_LIMITS[1]]
         # From best guess start with different slopes to overcome local minimums
-        best_guess = self.find_best_guess_ols(x, y, noise, weights=weights)
+        best_guess = self.find_best_guess_ols(x, y, noise=noise, weights=weights)
         best_fit = {'cost': np.inf, 'p_opt': {}, 'g_opt': {}}
         for slope in slopes:
             best_guess['slope'] = slope

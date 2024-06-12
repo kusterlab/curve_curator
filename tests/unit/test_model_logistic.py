@@ -229,6 +229,17 @@ class TestCoreFunction:
         LM0 = LogisticModel()
         LM1 = LogisticModel(**self.params)
         np.testing.assert_almost_equal(LM0(self.x, **self.params), LM1(self.x), decimal=3)
+
+    def test_predict_function(self):
+        LM = LogisticModel(**self.params)
+        y = LM.predict(self.x)
+        y_expected = np.array([0.991, 0.918, 0.550, 0.182, 0.109])
+        np.testing.assert_almost_equal(y, y_expected, decimal=3)
+
+    def test_predict_function_error(self):
+        LM = LogisticModel()
+        with pytest.raises(ValueError):
+            y = LM.predict(self.x)
         # TODO: change values and see it is correctly changed
 
 

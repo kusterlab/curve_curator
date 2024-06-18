@@ -26,8 +26,8 @@ from .__init__ import __version__
 def main():
     # Build a command line parser for parsing multiple config files
     command_line = argparse.ArgumentParser(
-        description='CurveCurator',
-        epilog="Complete analysis pipeline of dose-response curves including fitting, filtering, and visualization.\n\nFPB-2023")
+        description=f'CurveCurator (v{__version__})',
+        epilog="Complete analysis pipeline for dose-response curves including fitting, filtering, and visualization.\n\nFPB-2024")
     command_line.add_argument(
         "-b", "--batch",
         default=False,

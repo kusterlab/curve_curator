@@ -1,15 +1,15 @@
-2024-03-25 17:39:02,793 - INFO -  * Executing CurveCurator pipeline version 0.5.0.
-2024-03-25 17:39:02,793 - INFO -  * Reading parameter file of experiment.
-2024-03-25 17:39:02,825 - INFO -  * Loading data file ./proteinGroups.txt.
-2024-03-25 17:39:03,497 - INFO -  * 836 curves were removed because of >7 missing value(s).
-2024-03-25 17:39:03,825 - INFO -  * The following imputation value was used to fill NaNs: 963994.0
-2024-03-25 17:39:03,825 - INFO -  * 666 curves were removed because of >7 imputed value(s).
-2024-03-25 17:39:03,840 - INFO -  * 0 curves were removed because they had no valid control value(s).
-2024-03-25 17:39:03,856 - INFO -  * Fit will use interpolation X values:
-2024-03-25 17:39:03,856 - INFO -    [-8.52, -8.26, -8.0, -7.76, -7.52, -7.26, -7.0, -6.76, -6.52, -6.26, -6.0, -5.76, -5.52, -5.27, -5.02, -4.77, -4.52]
-2024-03-25 17:39:03,856 - INFO -  * Fitting curves parameters by standard OLS with 2 cores:
-2024-03-25 17:39:39,310 - INFO -  * Fitting curves parameters done !
-2024-03-25 17:39:39,310 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
-2024-03-25 17:39:39,310 - INFO -    alpha=0.1, fc_lim=0.5, s0=0.2709
-2024-03-25 17:39:39,528 - INFO -  * Rendering interactive dashboard using webgl backend ...
-2024-03-25 17:39:40,732 - INFO -  * Dashboard successfully rendered.
+2024-06-18 09:47:11,684 - INFO -  * Executing CurveCurator pipeline version 0.5.1.
+2024-06-18 09:47:11,684 - INFO -  * Reading parameter file of experiment.
+2024-06-18 09:47:11,715 - INFO -  * Loading data file ./proteinGroups.txt.
+2024-06-18 09:47:12,327 - INFO -  * 836 curves were removed because of >7 missing value(s).
+2024-06-18 09:47:12,562 - INFO -  * The following imputation value was used to fill NaNs: 963994.0
+2024-06-18 09:47:12,562 - INFO -  * 666 curves were removed because of >7 imputed value(s).
+2024-06-18 09:47:12,562 - INFO -  * 0 curves were removed because they had no valid control value(s).
+2024-06-18 09:47:12,577 - INFO -  * Fit will use interpolation X values:
+2024-06-18 09:47:12,577 - INFO -    [-8.52, -8.26, -8.0, -7.76, -7.52, -7.26, -7.0, -6.76, -6.52, -6.26, -6.0, -5.76, -5.52, -5.27, -5.02, -4.77, -4.52]
+2024-06-18 09:47:12,577 - INFO -  * Fitting curves parameters by standard OLS with 2 cores:
+2024-06-18 09:47:45,805 - INFO -  * Fitting curves parameters done !
+2024-06-18 09:47:45,805 - INFO -  * Calculate Relevance Score and apply SAM user thresholds:
+2024-06-18 09:47:45,805 - INFO -    alpha=0.1, fc_lim=0.5, s0=0.2709
+2024-06-18 09:47:45,994 - INFO -  * Rendering interactive dashboard using webgl backend ...
+2024-06-18 09:47:46,951 - INFO -  * Dashboard successfully rendered.

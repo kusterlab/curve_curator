@@ -296,22 +296,22 @@ def get_js_table_selection_code(col):
         """,
 
         # Dynamically select the input column
-        f"const mod_seq_arr = source.data['{col}'];",
+        f"const sequence = source.data['{col}'];",
 
         """
         var user_regex = String(text_input.value);
         var n_rows = source.data['index'].length;
-        var selected_curves = selection_view.filters[0].booleans;
+        var visibility = selection_view.filters[0].booleans;
 
         // Prevent to unspecific searches
-        if (user_regex.length < 3){
+        if (user_regex.length < 2){
             return;
         };
 
         // Check each row if substring from user is in mod seq. If so add to new index
         for(var i = 0; i < n_rows; i++){
-            if (mod_seq_arr[i].match(user_regex)){
-                if (selected_curves[i]){
+            if (visibility[i]){
+                if (sequence[i].match(user_regex)){
                     new_idxs.push(i);
                 };
             };
@@ -319,7 +319,7 @@ def get_js_table_selection_code(col):
 
         // Update Selection
         source.selected.indices = new_idxs;
-        source.change.emit();
+        source.selected.change.emit();
         """
     ])
     return js_code
@@ -673,9 +673,10 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     # By default its a volcano plot view, which can be modulated by JS later by the user.
     # Depending on which button is active, the corresponding y column is rendered initially.
     bd = volcano_params['button_default']
-    fig1_dots = fig1.scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, color=color_mapper, fill_alpha=0.4, size=6, source=source, view=view_selected_curves)
-    fig1_dots.selection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color='black', fill_color=color_mapper, fill_alpha=1, size=6)
-    fig1_dots.nonselection_glyph = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=None, fill_color=color_mapper, fill_alpha=0.2, size=6)
+    fig1_scatter = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=color_mapper, fill_color=color_mapper, fill_alpha=0.4, size=6)
+    fig1_scatter_select = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color='black', fill_color=color_mapper, fill_alpha=1, size=6)
+    fig1_scatter_not = Scatter(x=volcano_params['x_col_name'], y=volcano_params[f'y_col_name_{bd}'], line_color=None, fill_color=color_mapper, fill_alpha=0.2, size=6)
+    fig1_dots = fig1.add_glyph(source, glyph=fig1_scatter, selection_glyph=fig1_scatter_select, nonselection_glyph=fig1_scatter_not, view=view_selected_curves)
 
     # Add hover tooltips labels to figure 1 for dots
     tooltips = [("Dot", "$index, @Name{%.25s}")]

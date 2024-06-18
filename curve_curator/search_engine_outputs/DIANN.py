@@ -18,4 +18,6 @@ class DiannMap:
     _col_map = {
         'Genes': 'Genes',
         'Protein.Ids': 'Proteins',
+        'Modified.Sequence': 'Modified sequence',
+        'Precursor.Charge': 'Charge',
     }

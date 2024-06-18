@@ -1,3 +1,9 @@
+v0.5.1
+- Improve the stability of the dashboard (#27)
+- Add DIA-NN peptide parser (#28)
+- Enable fit-predict logic for model API (#25)
+- Minor improvements and fixes
+
 v0.5.0
 - Fixing R2 calculation (#15)
 - RMSE of the curve model is now an output column (#18)

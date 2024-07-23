@@ -528,7 +528,7 @@ def run_pipeline(df, config, decoy_mode=False):
     if fit_params['interpolation']:
         fit_params['x_interpolated'] = build_interpolation_points(drug_log_concs_sorted)
         ui.message(' * Fit will use interpolation X values:', end='\n')
-        ui.message('   {}'.format(list(map(lambda v: round(v, 2), fit_params['x_interpolated']))))
+        ui.message('   {}'.format(list(map(lambda v: round(float(v), 2), fit_params['x_interpolated']))))
 
     # Fit the logistic model using multiple cores and optional processing parameters
     n_cores = config['Processing']['available_cores']

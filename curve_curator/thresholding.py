@@ -296,6 +296,7 @@ def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_
 
     # Add labels
     df['Curve Regulation'] = ''
+    df['Curve Regulation'] = df['Curve Regulation'].astype(object)
     df.loc[~p_mask & not_regulated_mask, 'Curve Regulation'] = 'not'
     df.loc[p_mask & effect_mask & up_mask, 'Curve Regulation'] = 'up'
     df.loc[p_mask & effect_mask & down_mask, 'Curve Regulation'] = 'down'
@@ -430,9 +431,9 @@ def estimate_fdr(target_df, decoy_df, config):
     # Combine target decoy data set but keep it mappable by index
     decoy_df.set_index('Name', inplace=True)
     decoy_df['Decoy'] = True
+    target_df['Decoy'] = False
     df_combined = pd.concat([target_df, decoy_df])
     assert df_combined.index.is_unique
-    df_combined['Decoy'] = df_combined['Decoy'].replace(np.nan, False)
 
     # Calculate q value and add to target
     df_combined = calculate_qvalue(df_combined, sort_cols=list(sort_cols.keys()), sort_ascendings=list(sort_cols.values()), decoy_col='Decoy', q_col_name='Curve q_Value')

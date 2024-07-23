@@ -252,8 +252,7 @@ def get_js_source_selection_code(cols_ratio):
         curve_fit.data['names'] = names_curve;
 
         // Adjust the y range of the plot if there is a bigger value
-        //var y_max = Math.max(... y_values_scatter, ... y_values_curve.flat());
-        var y_max = Math.max(... y_values_scatter);
+        var y_max = Math.max(... y_values_scatter.filter(v => Number.isFinite(v)));
         if (y_max > 1.905){
             CurveFig.y_range.end = y_max + y_max * 0.05;
         } else {

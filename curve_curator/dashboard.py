@@ -295,12 +295,18 @@ def get_js_table_selection_code(col):
         """,
 
         # Dynamically select the input column
-        f"const sequence = source.data['{col}'];",
+        f"var sequence = source.data['{col}'];",
 
         """
         var user_regex = String(text_input.value);
         var n_rows = source.data['index'].length;
         var visibility = selection_view.filters[0].booleans;
+        
+        // remove small chars in case-insensitive mode
+        if (case_sensitive.active.length == 0) {
+            user_regex = user_regex.toUpperCase();
+            sequence = sequence.map(s => s.toUpperCase());
+        };
 
         // Prevent to unspecific searches
         if (user_regex.length < 2){
@@ -605,6 +611,10 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     slider_steps = min(0.5, abs(signal_slider_params[3] - signal_slider_params[0]) / 100)
     signal_slider = RangeSlider(start=signal_slider_params[0], end=signal_slider_params[3], value=signal_slider_params[1:3],
                                 step=slider_steps, title=r"Signal Range Selection", margin=margin, visible=plot_signal)
+
+    # Case-sensitive checker
+    margin = (17, 5, 30, 5)  # (Top, right, bottom, left)
+    case_senitive_checkbox = CheckboxGroup(labels=["case-sensitive search"], active=[0], margin=margin, visible=True)
 
     # Name Filter
     margin = (10, 5, 30, 5)  # (Top, right, bottom, left)
@@ -948,6 +958,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     js_code = get_js_table_selection_code('Name')
     name_search_button.js_on_click(CustomJS(args=dict(source=source,
                                                       text_input=name_input,
+                                                      case_sensitive=case_senitive_checkbox,
                                                       selection_view=view_selected_curves),
                                             code=js_code))
 
@@ -955,6 +966,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     js_code = get_js_table_selection_code('Modified sequence')
     modseq_search_button.js_on_click(CustomJS(args=dict(source=source,
                                                         text_input=modseq_input,
+                                                        case_sensitive=case_senitive_checkbox,
                                                         selection_view=view_selected_curves),
                                               code=js_code))
 
@@ -962,6 +974,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     js_code = get_js_table_selection_code('Genes')
     gene_search_button.js_on_click(CustomJS(args=dict(source=source,
                                                       text_input=gene_input,
+                                                      case_sensitive=case_senitive_checkbox,
                                                       selection_view=view_selected_curves),
                                             code=js_code))
 
@@ -1049,8 +1062,9 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
                    [fig1, fig2, fig5, fig3, fig4],
                    [selection_title],
                    [pec50_slider, score_slider, signal_slider],
-                   [name_input, name_search_button, modseq_input, modseq_search_button, gene_input, gene_search_button],
+                   [name_input, name_search_button, modseq_input, modseq_search_button, gene_input, gene_search_button, case_senitive_checkbox],
                    [data_table]])
+
     # output to HTML file
     output_file(f"{out_path}", title=title)
     save(grid)

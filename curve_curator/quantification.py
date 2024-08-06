@@ -267,7 +267,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
 
     # ignore curve if there are to little number of data points and don't fit
     if n <= 4:
-        return 19 * (np.nan,)
+        return 20 * (np.nan,)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
     # If replicated doses exist, they must be aggregated before the linear interpolation is done to prevent arbitrary steps in the function.

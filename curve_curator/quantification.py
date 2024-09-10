@@ -337,8 +337,8 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     auc = M1.calculate_auc(x)
 
     # Calculate f-statistic
-    m0_sse = M0.calculate_sum_squared_residuals(x, y) + 1e-16
-    m1_sse = M1.calculate_sum_squared_residuals(x, y) + 1e-16
+    m0_sse = M0.calculate_sum_squared_residuals(x, y) + 1e-20
+    m1_sse = M1.calculate_sum_squared_residuals(x, y) + 1e-20
     m1_k = M1.n_parameter()
     f_statistic = (m0_sse - m1_sse) / m1_sse * (n / m1_k)
     f_statistic = f_statistic if f_statistic >= 0.0 else 0.0

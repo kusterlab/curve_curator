@@ -52,7 +52,7 @@ class _Model:
     """
     @staticmethod
     def core(x, *args, **kwargs):
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         return x
 
     @staticmethod
@@ -180,7 +180,7 @@ class _Model:
         """
         if params is None:
             params = self.get_all_parameters()
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         x = x[np.isfinite(x)]
         interval = (np.min(x), np.max(x))
         curve_area = self.integrate_response(interval, params=params)
@@ -496,7 +496,7 @@ class MeanModel(_Model):
         y : array-like
             Response as described by the intercept value for each x value.
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         if len(x.shape) == 0:
             return intercept
         return np.full_like(x, intercept)
@@ -520,7 +520,7 @@ class MeanModel(_Model):
         F_x : float
             antiderivative at x
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         F_x = intercept * x + c
         return F_x
 
@@ -541,7 +541,7 @@ class MeanModel(_Model):
         -------
         Jacobian Matrix : np.array of shape (|x|, 1)
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         jac = np.expand_dims(np.full_like(x, 1), axis=1)
         return jac
 
@@ -782,7 +782,7 @@ class LogisticModel(_Model):
         y : array-like
             Response as described by the input parameters for each x value.
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         with np.errstate(over='ignore', under='ignore', invalid='ignore'):
             y = (front - back) / (1 + 10 ** (slope * (x + pec50))) + back
             return y
@@ -812,7 +812,7 @@ class LogisticModel(_Model):
         F_x : float
             antiderivative value at x
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         F_x = front * x - (front - back) / slope * np.log10(1 + 10 ** (slope * (x + pec50))) + c
         return F_x
 
@@ -839,7 +839,7 @@ class LogisticModel(_Model):
         -------
         Jacobian matrix : np.array of shape (|x|, k) with k params
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         with np.errstate(over='ignore', under='ignore', invalid='ignore'):
             jac = np.array([
                 (np.log(10) * (back - front) *    slope    * 10 ** (slope * (x + pec50))) / (1 + 10 ** (slope * (x + pec50))) ** 2,  # pec50
@@ -1023,7 +1023,7 @@ class LogisticModel(_Model):
         -------
         jac(params) -> matrix
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
 
         # Partial derivatives of OLS to pec50
         def f_1(params):
@@ -1085,7 +1085,7 @@ class LogisticModel(_Model):
         -------
         Standard error for each parameter.
         """
-        x = np.asarray(x)
+        x = np.asarray(x, dtype=np.float64)
         parameters = self.get_all_parameters()
         # Do Moore-Penrose inverse of jacobian matrix and discarding zero singular values.
         # Similar to scipy optimize.curvefit procedure
@@ -1383,7 +1383,7 @@ class LogisticModel(_Model):
         """
         if params is None:
             params = self.get_all_parameters()
-        x, y = np.asarray(x), np.asarray(y)
+        x, y = np.asarray(x, dtype=np.float64), np.asarray(y, dtype=np.float64)
         ss_res = self.calculate_sum_squared_residuals(x, y, params)
         n_obs = y.size - np.sum(np.isnan(y))
         dof = self.get_dofs(n=n_obs)[1]
@@ -1431,3 +1431,61 @@ class LogisticModel(_Model):
         dof_n = self.n_parameter() - 1
         dof_d = n - self.n_parameter()
         return dof_n, dof_d
+
+    def evaluate(self, x, y, recalibrated=True, stability_value=1e-20):
+        """
+        Evaluates the statistical significance of the model given X & Y.
+        We found that only recalibration will yield correct p-values and linear formulas do not work for the 4p-logistic model.
+        The number of valid observations must be > 4.
+
+        Parameters
+        ----------
+        x : array-like
+            observed x-values.
+        y : array-like
+            observes y-values.
+        recalibrated : bool, optional
+            If True, uses the recalibrated F-statistic (default).
+            If False, uses the linear F-statistic (not recommended).
+        stability_value : float, optional
+            Small value to ensure numerical stability in case the model fits the data perfectly.
+            It is so small that it has no noticeable effect. 1e-20 (default). No negative values allowed.
+
+        Returns
+        -------
+        f_value, p_value
+
+        Notes
+        -----
+        For more information, see equations 6, 7, 8 Bayer et al. 2023.
+        """
+        # Count number of observations and prevent too low n
+        n = len(y)
+        if n <= 4:
+            return np.nan, np.nan
+
+        # prevent negative stability_values
+        if stability_value < 0:
+            raise ValueError('The stability_value must be >= 0.')
+
+        # Calculate the summed squared error of the mean null model as baseline reference. Add small value for stability.
+        m0_sse = np.var(y) * y.size + stability_value
+
+        # Calculate the model summed squared error. Add small value for stability.
+        sse = self.calculate_sum_squared_residuals(x, y) + stability_value
+        k = self.n_parameter()
+        dfn, dfd = self.get_dofs(n, optimized=recalibrated)
+
+        # Calculate the recalibrated f-statistic optimized for this model
+        if recalibrated:
+            f_value = (m0_sse - sse) / sse * (n / k)
+            f_value = f_value if f_value >= 0.0 else 0.0
+            p_value = stats.f.sf(f_value, dfn=dfn, dfd=dfd, scale=1.0, loc=0.12)
+            return f_value, p_value
+
+        # Calculate the standard linear f-statistic (which is wrong for non-linear models !)
+        else:
+            f_value = (m0_sse - sse) / sse * (dfd / dfn)
+            f_value = f_value if f_value >= 0.0 else 0.0
+            p_value = stats.f.sf(f_value, dfn=dfn, dfd=dfd, scale=1.0, loc=0.0)
+            return f_value, p_value

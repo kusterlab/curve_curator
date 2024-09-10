@@ -162,8 +162,9 @@ class TestCoreFunction:
 
     def test_invalid_input_type(self):
         LM = LogisticModel()
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             LM("invalid_input", self.params['pec50'], self.params['slope'], self.params['front'], self.params['back'])
+        with pytest.raises(TypeError):
             LM(self.x, "invalid_input", self.params['slope'], self.params['front'], self.params['back'])
             LM(self.x, self.params['pec50'], "invalid_input", self.params['front'], self.params['back'])
             LM(self.x, self.params['pec50'], self.params['slope'], "invalid_input", self.params['back'])

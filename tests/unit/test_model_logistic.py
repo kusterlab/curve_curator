@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import warnings
 from curve_curator.models import LogisticModel
 
 
@@ -172,7 +173,9 @@ class TestCoreFunction:
 
     def test_valid_input_x_types(self):
         LM = LogisticModel(**self.params)
-        y = LM(self.x)
+        LM(self.x.astype(float))
+        LM(self.x.astype(int))
+        y = LM(self.x.astype(np.float64))
         assert isinstance(y, np.ndarray)
         y = LM(list(self.x))
         assert isinstance(y, np.ndarray)
@@ -713,3 +716,47 @@ class TestRMSE:
         error = 0.25
         rmse = LM.calculate_rmse(self.x, y+error)
         np.testing.assert_almost_equal(rmse, error)
+
+
+class TestEvaluate:
+    x = np.array([-np.inf, -12, -11, -10,  -9,  -8,  -7,  -6,  -5,  -4])
+
+    def test_no_curve(self):
+        LM = LogisticModel()
+        LM.set_fitted_params((7, 1, 1, 1))  # set: pec50, slope, front, back
+        y = LM.predict(self.x)
+        with warnings.catch_warnings(action="ignore"):
+            f_value, p_value = LM.evaluate(self.x, y, stability_value=0)
+        f_value_expected, p_value_expected = (0, 1)
+        np.testing.assert_almost_equal(f_value, f_value_expected)
+        np.testing.assert_almost_equal(p_value, p_value_expected)
+
+    def test_perfect_curve(self):
+        LM = LogisticModel()
+        LM.set_fitted_params((7, 1, 1, 0))  # set: pec50, slope, front, back
+        y = LM.predict(self.x)
+        with warnings.catch_warnings(action="ignore"):
+            f_value, p_value = LM.evaluate(self.x, y, stability_value=0)
+        f_value_expected, p_value_expected = (np.inf, 0)
+        np.testing.assert_almost_equal(f_value, f_value_expected)
+        np.testing.assert_almost_equal(p_value, p_value_expected)
+
+    def test_curve_with_random_noise(self):
+        LM = LogisticModel()
+        LM.set_fitted_params((7, 1, 1, 0))  # set: pec50, slope, front, back
+        y = LM.predict(self.x) + np.random.normal(loc=0, scale=0.1, size=len(self.x))
+        with warnings.catch_warnings(action="ignore"):
+            f_value, p_value = LM.evaluate(self.x, y, stability_value=0)
+        assert (0 < f_value) & (f_value < np.inf)
+        assert (0 < p_value) & (p_value < 1)
+
+    def test_too_little_n(self):
+        x = np.array([-9,  -8,  -7,  -6])
+        LM = LogisticModel()
+        LM.set_fitted_params((7, 1, 1, 1))  # set: pec50, slope, front, back
+        y = LM.predict(x)
+        with warnings.catch_warnings(action="ignore"):
+            f_value, p_value = LM.evaluate(x, y, stability_value=0)
+        f_value_expected, p_value_expected = (np.nan, np.nan)
+        np.testing.assert_almost_equal(f_value, f_value_expected)
+        np.testing.assert_almost_equal(p_value, p_value_expected)

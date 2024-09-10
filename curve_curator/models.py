@@ -161,7 +161,7 @@ class _Model:
         f1 = self.primitive_function(interval[1], **params)
         return f1 - f0
 
-    def get_auc(self, x, intercept=1.0, params=None):
+    def calculate_auc(self, x, intercept=1.0, params=None):
         """
         Calculates the AUC for the log-logistic model in the observed drug range.
 

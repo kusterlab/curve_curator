@@ -334,7 +334,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     rmse = M1.calculate_rmse(x, y)
     r2 = M1.calculate_r2(x, y)
     fold_change = M1.calculate_fold_change(x[1:], to_control=fit_params['control_fold_change'])
-    auc = M1.get_auc(x)
+    auc = M1.calculate_auc(x)
 
     # Calculate f-statistic
     m0_sse = M0.calculate_sum_squared_residuals(x, y) + 1e-16

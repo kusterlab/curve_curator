@@ -588,31 +588,31 @@ class TestAreaUnderTheCurve:
 
         params = {'pec50': 0.0, 'slope': 1.0, 'front': 1.0, 'back': 0.1}
         LM = LogisticModel(**params)
-        auc = LM.get_auc(self.x)
+        auc = LM.calculate_auc(self.x)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
         params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 1.0}
         LM = LogisticModel(**params)
-        auc = LM.get_auc(self.x)
+        auc = LM.calculate_auc(self.x)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
     def test_regulation_area(self):
         expected_auc = 0.5
         params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
         LM = LogisticModel(**params)
-        auc = LM.get_auc(self.x)
+        auc = LM.calculate_auc(self.x)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
         expected_auc = 0.75
         params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.5}
         LM = LogisticModel(**params)
-        auc = LM.get_auc(self.x)
+        auc = LM.calculate_auc(self.x)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
         expected_auc = 1.0
         params = {'pec50': 7.0, 'slope': 1.0, 'front': 2.0, 'back': 0.0}
         LM = LogisticModel(**params)
-        auc = LM.get_auc(self.x)
+        auc = LM.calculate_auc(self.x)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
     def test_intercept(self):
@@ -620,24 +620,24 @@ class TestAreaUnderTheCurve:
         LM = LogisticModel(**params)
 
         expected_auc = 1.0
-        auc = LM.get_auc(self.x, intercept=1.0)
+        auc = LM.calculate_auc(self.x, intercept=1.0)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
         expected_auc = 0.5
-        auc = LM.get_auc(self.x, intercept=2.0)
+        auc = LM.calculate_auc(self.x, intercept=2.0)
         np.testing.assert_almost_equal(auc, expected_auc, decimal=6)
 
     def test_non_finite(self):
         params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
         x = np.array([-np.inf, -9.0, -8.0, -7.0, -6.0, -5.0, np.nan])
         LM = LogisticModel(**params)
-        np.testing.assert_almost_equal(LM.get_auc(self.x), LM.get_auc(x), decimal=6)
+        np.testing.assert_almost_equal(LM.calculate_auc(self.x), LM.calculate_auc(x), decimal=6)
 
     def test_not_sorted(self):
         params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
         x1 = self.x[::-1]
         LM = LogisticModel(**params)
-        np.testing.assert_almost_equal(LM.get_auc(self.x), LM.get_auc(x1), decimal=6)
+        np.testing.assert_almost_equal(LM.calculate_auc(self.x), LM.calculate_auc(x1), decimal=6)
 
 
 class TestR2:

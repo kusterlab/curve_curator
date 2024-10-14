@@ -1187,10 +1187,14 @@ def render(df, config):
     regulation_map = {'up': 1, 'down': 1, 'not': 2}
     df['Curve Regulation'] = df['Curve Regulation'].apply(lambda x: regulation_map.get(x, 0))
 
-    # Define plot y ranges dynamically or use default
+    # Define plot y ranges dynamically or use default. 100 is the maximum possible and will overwrite values in the dashboard.
+    # The minimal plot y range is 8. This is true for the p-value [0] and the relevance score [1].
+    df[volcano_params['y_col_name_0']] = df[volcano_params['y_col_name_0']].clip(0, 100)
     y_volcano_max = df.loc[(df['Curve Regulation'] == 1), volcano_params['y_col_name_0']].max() + 0.1
     y_volcano_max = y_volcano_max if y_volcano_max > 8 else 8
     volcano_params['y_range_p0'] = (0, y_volcano_max)
+
+    df[volcano_params['y_col_name_1']] = df[volcano_params['y_col_name_1']].clip(0, 100)
     y_volcano_max = df.loc[(df['Curve Regulation'] == 1),  volcano_params['y_col_name_1']].max() + 0.1
     y_volcano_max = y_volcano_max if y_volcano_max > 8 else 8
     volcano_params['y_range_p1'] = (0, y_volcano_max)

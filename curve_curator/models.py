@@ -56,6 +56,11 @@ class _Model:
         return x
 
     @staticmethod
+    def inverse_function(x, *args, **kwargs):
+        x = np.asarray(x, dtype=np.float64)
+        return x
+
+    @staticmethod
     def primitive_function(x, c=0.0, **kwargs):
         F_x = 0.5 * x**2 + c
         return F_x
@@ -502,6 +507,28 @@ class MeanModel(_Model):
         return np.full_like(x, intercept)
 
     @staticmethod
+    def inverse_function(y, intercept):
+        """
+        Intercept inverse function. This will be always undefined.
+
+        Parameters
+        ----------
+        y : array-like
+            Input array with ratio values.
+        intercept : float
+            y-value for all x values.
+
+        Returns
+        -------
+        x : array-like
+            Concentration values in log10 space.
+        """
+        y = np.asarray(y, dtype=np.float64)
+        if len(y.shape) == 0:
+            return np.nan
+        return np.full_like(y, np.nan)
+
+    @staticmethod
     def primitive_function(x, intercept, c=0.0):
         """
         primitive function of the mean modle.
@@ -788,6 +815,36 @@ class LogisticModel(_Model):
             return y
 
     @staticmethod
+    def inverse_function(y, pec50, slope, front, back):
+        """
+        4-parameter log-logistic inverse function. y values outside the range [front, back] will be returned as nan as they are undefined.
+
+        Parameters
+        ----------
+        y : array-like
+            Input array with ratios.
+        pec50 : float
+            Inflection point of the log-logistic function. pEC50 = - log10(EC50).
+        slope : float
+            Steepness of the transition between front and back plateau.
+        front : float
+            Front plateau y for x = -inf
+        back : float
+            Back plateau y for x = inf
+
+        Returns
+        -------
+        x : array-like
+            Concentrations as described by the input parameters for each y value.
+        """
+        y = np.asarray(y, dtype=np.float64)
+        y[y <= min(front, back)] = np.nan
+        y[y >= max(front, back)] = np.nan
+        with np.errstate(over='ignore', under='ignore', invalid='ignore'):
+            x = (1 / slope) * np.log10((front - back) / (y - back) - 1) - pec50
+            return x
+
+    @staticmethod
     def primitive_function(x, pec50, slope, front, back, c=0.0):
         """
         primitive function of the 4-parameter log-logistic function.
@@ -999,6 +1056,28 @@ class LogisticModel(_Model):
         if to_control:
             return np.log2(self(max(x), **self.fitted_params))
         return np.log2(self(max(x), **self.fitted_params)) - np.log2(self(min(x), **self.fitted_params))
+
+    def calculate_ic(self, pct=0.5):
+        """
+        Calculates the inhibitory concentration for a certain absolute value. Commonly, the IC50 (default) is used.
+        IC_pct values come with many problems and we strongly recommend to work with the model parameter pEC50 instead.
+
+        Attributes
+        ----------
+        pct : float or array-like
+            The inhibition percentage that is expected.
+
+        Returns
+        -------
+        x_pct : float or array-like
+            The concentration x in log10 space where y=pct.
+        """
+        params = self.get_all_parameters()
+        undefined_params = {k for k, v in params.items() if np.isnan(v)}
+        if any(undefined_params):
+            raise ValueError(f'The following model parameter(s) are not defined yet: {undefined_params}. Please fit or set them first.')
+        x_pct = self.inverse_function(pct, **params)
+        return x_pct
 
     def build_jacobian_matrix_ols(self, x, y, parameter_names, weights=None):
         """

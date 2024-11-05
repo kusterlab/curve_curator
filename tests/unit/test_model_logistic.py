@@ -247,6 +247,50 @@ class TestCoreFunction:
         # TODO: change values and see it is correctly changed
 
 
+class TestInverseFunction:
+    y = np.array([10/11, 1/2, 1/11])
+    params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+
+    def test_inverse_function_standard_down(self):
+        LM = LogisticModel(**self.params)
+        x = LM.inverse_function(self.y, **LM.params)
+        x_expected = [-8.0, -7.0, -6.0]
+        np.testing.assert_almost_equal(x, x_expected, decimal=3)
+
+    def test_inverse_function_standard_up(self):
+        LM = LogisticModel(**self.params)
+        LM.params['back'] = 2.0
+        x = LM.inverse_function(2.0 - self.y, **LM.params)
+        x_expected = [-8.0, -7.0, -6.0]
+        np.testing.assert_almost_equal(x, x_expected, decimal=3)
+
+    def test_inverse_function_slope(self):
+        LM = LogisticModel(**self.params)
+
+        LM.params['slope'] = 0.5
+        x = LM.inverse_function(self.y, **LM.params)
+        x_expected = [-9.0, -7.0, -5.0]
+        np.testing.assert_almost_equal(x, x_expected, decimal=3)
+
+        LM.params['slope'] = 2.0
+        x = LM.inverse_function(self.y, **LM.params)
+        x_expected = [-7.5, -7.0, -6.5]
+        np.testing.assert_almost_equal(x, x_expected, decimal=3)
+
+    def test_inverse_function_pec50(self):
+        LM = LogisticModel(**self.params)
+        LM.params['pec50'] = 0
+        x = LM.inverse_function(self.y, **LM.params)
+        x_expected = [-1.0, -0.0, 1.0]
+        np.testing.assert_almost_equal(x, x_expected, decimal=3)
+
+    def test_inverse_function_outside_range(self):
+        LM = LogisticModel(**self.params)
+        x = LM.inverse_function([1.0, 0.5, 0.0], **LM.params)
+        x_expected = [np.nan, -7.0, np.nan]
+        np.testing.assert_almost_equal(x, x_expected, decimal=3)
+
+
 class TestSetBoundaries:
     x = np.array([-9.0, -8.0, -7.0, -6.0, -5.0])
     bounds = {'pec50_delta': 2.0, 'slope_limits': (1e-2, 10.0), 'y_limits': (1e-3, 1e6), 'noise_limits': (0.0, 20.0)}
@@ -642,6 +686,22 @@ class TestAreaUnderTheCurve:
         x1 = self.x[::-1]
         LM = LogisticModel(**params)
         np.testing.assert_almost_equal(LM.calculate_auc(self.x), LM.calculate_auc(x1), decimal=6)
+
+
+class TestInhibitoryConcentrations:
+    pcts = np.array([10/11, 1/2, 1/11])
+    params = {'pec50': 7.0, 'slope': 1.0, 'front': 1.0, 'back': 0.0}
+
+    def test_empty_model_error(self):
+        LM = LogisticModel()
+        with pytest.raises(ValueError):
+            LM.calculate_ic(pct=0.5)
+
+    def test_correct_icx_calculations(self):
+        LM = LogisticModel(**self.params)
+        ic_pcts_expected = [-8.0, -7.0, -6.0]
+        ic_pcts = LM.calculate_ic(self.pcts)
+        np.testing.assert_almost_equal(ic_pcts, ic_pcts_expected)
 
 
 class TestR2:

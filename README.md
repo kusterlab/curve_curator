@@ -37,9 +37,9 @@ If you have anaconda already installed on your computer, you can move to step 2.
 #### 2. Install a new environment for CurveCurator in the shell.
 Open the "Anaconda Prompt" program. Installation of the environment is only required once. Type the following command into the shell: 
 ```sh
-(base)$ conda create -n CurveCuratorEnv pip
+(base)$ conda create -n CurveCuratorEnv pip python=3.12
 ```
-This will create a new environment with the name CurveCuratorEnv. In this environment, it will install the "pip" software. It will ask you to confirm the installation of some packages for pip. If you have an environment with the same name already created or you prefer a different name, you must either delete it or create an environment with a different name. Please remember the name of the environment. For more information, see the anaconda documentation. 
+This will create a new environment with the name CurveCuratorEnv. In this environment, it will install the "pip" software and python version 3.12. It will ask you to confirm the installation of some packages for pip. If you have an environment with the same name already created or you prefer a different name, you must either delete it or create an environment with a different name. Please remember the name of the environment. For more information, see the anaconda documentation. 
 
 #### 3. Activate the CurveCuratorEnv environment
 Activation of the curve_curator environment is always required each time you open a new shell and must be done before you run the pipeline (see section "Run pipeline").

@@ -25,7 +25,7 @@ def parallelize_dataframe(df, n_cores, func, **kwargs):
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame that stores tha data
+        DataFrame that stores the data
     n_cores : int
         number of cores to use
     func : object
@@ -41,6 +41,7 @@ def parallelize_dataframe(df, n_cores, func, **kwargs):
         df_splited = np.array_split(df, n_cores)
         df_processed = pool.map(functools.partial(func, **kwargs), df_splited)
         df = pd.concat(df_processed)
+        pool.terminate()
     return df
 
 

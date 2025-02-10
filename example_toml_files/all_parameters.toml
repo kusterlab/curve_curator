@@ -13,7 +13,7 @@
 #
 ['Meta']
 id = 'ID1'								# Unique dataset identifier.
-description = 'Some experiment'						# Short description about the experiment.	
+description = 'Some experiment'						# Short description about the experiment.
 condition = 'DrugX'							# The condition that was tested. e.g. molecule name.
 treatment_time = '24 h'							# treatment time.
 
@@ -63,7 +63,7 @@ ratio_range = [0.0, +inf]						# [<lower>, <upper>] The range of values the resp
 # Parameters to fine-tune the curve fitting procedure
 #
 ['Curve Fit']
-front = 1.0								# <N> This will fix the curve front to the value N. 
+front = 1.0								# <N> This will fix the curve front to the value N.
 slope = 1.0								# <N> This will fix the curve slope to the value N.
 back = 0.0								# <N> This will fix the curve back to the value N.
 weights	 = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]	# Add weights for the curve fit. They must have the same order and number as doses and experiments. Not compatible with interpolation points.
@@ -82,15 +82,16 @@ interpolation = false							# <true | false> Use interpolation helper points for
 alpha = 0.05								# <0.0, 1.0> p_value limit for a statistically meaningful curve (SAM-Analysis).
 fc_lim = 0.45								# Absolute Log2 Fold Change limit for a biologically meaningful curve (SAM-Analysis).
 optimized_dofs = true							# <true | false> Use the optimized degrees of freedom for correct p-value estimation.
-loc = 0.12								# <N> This will fix the location parameter of the f-distribution to the value N. 
-scale = 1.0								# <N> This will fix the scale parameter of the f-distribution to the value N. 
-dfn = 5.0								# <N> This will fix the dfn parameter of the f-distribution to the value N. 
-dfd = 7.0								# <N> This will fix the dfd parameter of the f-distribution to the value N. 
-quality_min = -inf							# <N> This will apply an extra intensity filter of N for regulated curves.  
+loc = 0.12								# <N> This will fix the location parameter of the f-distribution to the value N.
+scale = 1.0								# <N> This will fix the scale parameter of the f-distribution to the value N.
+dfn = 5.0								# <N> This will fix the dfn parameter of the f-distribution to the value N.
+dfd = 7.0								# <N> This will fix the dfd parameter of the f-distribution to the value N.
+quality_min = -inf							# <N> This will apply an extra intensity filter of N for regulated curves.
 mtc_method = 'sam'							# Multiple testing correction method. See statsmodel for available types. Default CurveCurator is the SAM-statistic.
 not_rmse_limit = 0.1							# <N> specifies the root-mean-squared error threshold for the not classification.
 not_p_limit = +inf							# <N> specifies an additional maximum p-value threshold for the not classification.
 decoy_ratio = 1.0							# <N> specifies the target decoy ratio.
+pEC50_filter = [-inf, +inf]   # [<lower>, <upper>] The range of valid pEC50 values. Significant curves outside this range will not be classified as down or up in the result files.
 
 
 #
@@ -98,4 +99,3 @@ decoy_ratio = 1.0							# <N> specifies the target decoy ratio.
 #
 ['Dashboard']
 backend = 'svg'								# <'webgl'|'svg'|'canvas'> Specifies the HTML output backend. In svg mode, one can export .svg file for publication. webgl mode is for super fast interaction of big files.
-

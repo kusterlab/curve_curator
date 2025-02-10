@@ -77,13 +77,13 @@ def welcome():
     #########              #################              #########
              #             # Curve Curator #             #
               #            #################            #
-               0 pEC50                           pEC50 0 
+               0 pEC50                           pEC50 0
                 #                                     #
                  #                                   #
                   #########                 #########
 
                                                Florian P. Bayer - 2024
-    
+
     Please cite CurveCurator: 10.1038/s41467-023-43696-z"""
     print(TerminalFormatting.OKCYAN + msg + TerminalFormatting.ENDC, end='\n\n')
 
@@ -385,6 +385,7 @@ def set_default_values(config):
     f_statistic_params['mtc_method'] = str(f_statistic_params.get('mtc_method', 'sam'))
     f_statistic_params['not_rmse_limit'] = float(f_statistic_params.get('not_rmse_limit', 0.1))
     f_statistic_params['not_p_limit'] = float(f_statistic_params.get('not_p_limit', np.inf))  # Default is no max p-value filter
+    f_statistic_params['pEC50_filter'] = f_statistic_params.get('pEC50_filter', [-np.inf, np.inf])  # Default is no pEC50 filter
     config['F Statistic'] = f_statistic_params
 
     # Dashboard

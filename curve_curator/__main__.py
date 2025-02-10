@@ -118,7 +118,8 @@ def main():
             decoys = data_simulator.get_decoys(data, config=config)
             decoys = quantification.run_pipeline(decoys, config=config, decoy_mode=True)
             decoys = thresholding.apply_significance_thresholds(decoys, config=config)
-            fdr = thresholding.estimate_fdr(data, decoys, config=config)
+            thresholding.estimate_qvalues(data, decoys, config=config)
+            thresholding.estimate_fdr(data, decoys, config)
             decoys.to_csv(config['Paths']['decoys_file'], sep='\t', index=False)
 
         # Save curve file

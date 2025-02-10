@@ -1,7 +1,7 @@
 # quantification.py
 # Functions for processing and fitting dose-response curves.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 

@@ -1,7 +1,7 @@
 # models.py
 # Logistic & Mean Model classes
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 
@@ -357,7 +357,7 @@ class _Model:
         """
         if not self.guess:
             raise ValueError('Please provide a guess before fitting.')
-        
+
         llf = self.log_likelihood_function(x, y)
         parameter_names = list(self.get_free_params().keys()) + ['noise']
         guess = np.array([self.guess[pn] for pn in parameter_names])

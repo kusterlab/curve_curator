@@ -1,7 +1,7 @@
 # toolbox.py
 # Functions needed everywhere.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 

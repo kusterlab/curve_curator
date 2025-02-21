@@ -64,8 +64,10 @@ def main():
 
     # Handle batch process.
     if args.batch:
+        #  Read all non-empty and non-comment lines from batch file.
         with open(args.path) as f:
-            toml_files = f.read().splitlines()
+            batch_lines = [line for line in f.read().splitlines() if line.strip()]
+            toml_files = [line for line in batch_lines if (line[0] != '#')]
         ui.message(f' * Batch process detected with {len(toml_files)} toml files.')
         #  Verify that all paths exist in the batch file. If not warn user and exit the program.
         for tf in toml_files:

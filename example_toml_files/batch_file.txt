@@ -1,0 +1,8 @@
+# Example batch file:
+# Each line should be a valid absolute or relative path to a toml file.
+# The script will process each dataset based on the toml file one after the other. 
+# Make sure that you work in multiple different folders. Otherwise CurveCurator will overwrite outputs.
+# Comments are possible since v0.6.
+..\..\<path1_to_toml>\parameters.toml
+..\..\<path2_to_toml>\parameters.toml
+<Volume>:\<path3_to_toml>\parameters.toml

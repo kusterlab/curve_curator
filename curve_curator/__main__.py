@@ -15,6 +15,7 @@ import argparse
 
 from . import user_interface as ui
 from . import data_parser
+from . import toml_parser
 from . import data_simulator
 from . import quantification
 from . import thresholding
@@ -93,14 +94,14 @@ def main():
             ui.message(f' * Processing {i+1} of {len(toml_files)} data sets.', terminal_only=True)
 
         # Check the input file is a toml file
-        if not ui.is_toml_file(tf):
+        if not toml_parser.is_toml_file(tf):
             ui.error(f' * The given file is not a TOML parameter file !\n * If it\'s a batch file make sure you activate the batch mode with --batch.')
             ui.doneline()
             continue
 
         # Load config
-        config = ui.load_toml(tf, random_mode=bool(args.random))
-        config = ui.set_default_values(config)
+        config = toml_parser.load_toml(tf, random_mode=bool(args.random))
+        config = toml_parser.set_default_values(config)
 
         # In the random mode sample random data (H0=True)
         if args.random is not None:

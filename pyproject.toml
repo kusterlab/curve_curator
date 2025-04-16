@@ -1,16 +1,16 @@
 [tool.poetry]
 name = "curve_curator"
-version = "0.5.1"
+version = "0.6.dev"
 description = "CurveCurator is an open-source analysis platform for any dose-dependent data. It fits a classical 4-parameter equation to estimate effect potency, effect size, and the statistical significance of the observed response. 2D-thresholding efficiently reduces false positives in high-throughput experiments and separates relevant from irrelevant or insignificant hits in an automated and unbiased manner. An interactive dashboard allows users to quickly explore data locally."
 authors = ["Florian P. Bayer <f.bayer@tum.de>"]
 license = "Apache License, Version 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-bokeh = ">=3.4.0,<3.7.0"
-numpy = "^1.25.0"
-pandas = "^2.1.2"
+python = ">=3.11,<3.14"
+bokeh = ">=3.4.0,<3.8.0"
+numpy = ">=1.25.0,<3.0"
+pandas = "^2.1.0"
 scipy = "^1.10.1"
 statsmodels = "^0.14.0"
 tqdm = "^4.66.1"

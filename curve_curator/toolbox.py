@@ -1,11 +1,14 @@
 # toolbox.py
 # Functions needed everywhere.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 
 # Imports
+import os
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+
 import warnings
 import multiprocessing
 import functools
@@ -22,7 +25,7 @@ def parallelize_dataframe(df, n_cores, func, **kwargs):
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame that stores tha data
+        DataFrame that stores the data
     n_cores : int
         number of cores to use
     func : object
@@ -38,6 +41,7 @@ def parallelize_dataframe(df, n_cores, func, **kwargs):
         df_splited = np.array_split(df, n_cores)
         df_processed = pool.map(functools.partial(func, **kwargs), df_splited)
         df = pd.concat(df_processed)
+        pool.terminate()
     return df
 
 

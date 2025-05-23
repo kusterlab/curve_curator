@@ -1,7 +1,7 @@
 # quality_control.py
 # Quality control of the input data to identify potential systematic biases.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 # Imports:
@@ -57,4 +57,4 @@ def mad_analysis(df, config):
     mad = dev.abs().median()
     mad.to_csv(out_path, sep='\t', header=False, float_format='%.4f')
     ui.message(' * MAD-Analysis found the following median absolute deviations:', end='\n')
-    ui.message('   {}'.format(mad.round(2).to_dict()))
+    ui.message('   {}'.format(list(map(lambda i: f'{str(i[0])}: {round(float(i[1]), 2)}', mad.items()))))

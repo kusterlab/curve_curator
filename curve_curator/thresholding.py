@@ -1,7 +1,7 @@
 # thresholding.py
 # Apply SAM 2D thresholds to the dose-response curves to identify significant curves.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 from scipy.stats import f as f_distribution
@@ -258,7 +258,7 @@ def correct_pvalues(pvalues, alpha=0.01, method='fdr_bh'):
     return pvalues_out
 
 
-def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_cut_limit, quality_min):
+def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_cut_limit, quality_min, pEC50_range):
     """
     Find regulated curves and add a new column <Regulation> to the input df.
     Regulation can have three values: significant up, significant down, clearly not.
@@ -279,6 +279,8 @@ def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_
         The maximal value limit of a curve to be still considered not regulated.
     quality_min : float
         The minimum data quality required for a curve to have sufficient quantification.
+    pEC50_range : array-likely
+        The range of valid pEC50 values for significant curves. ([<lower>, <upper>])
 
     Returns
     -------
@@ -288,6 +290,7 @@ def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_
     p_mask = df[cut_col] >= cut_value
     down_mask = df['Curve Fold Change'] < 0
     up_mask = df['Curve Fold Change'] > 0
+    pec50_mask = df['pEC50'].between(*pEC50_range)
     effect_mask = df['Curve Fold Change'].abs() >= fc_lim
 
     # Not regulated curves require: not too much noise, not too much deviation to control, not too likely a log-logistic curve
@@ -296,9 +299,10 @@ def define_regulated_curves(df, cut_col, cut_value, fc_lim, not_rmse_limit, not_
 
     # Add labels
     df['Curve Regulation'] = ''
+    df['Curve Regulation'] = df['Curve Regulation'].astype(object)
     df.loc[~p_mask & not_regulated_mask, 'Curve Regulation'] = 'not'
-    df.loc[p_mask & effect_mask & up_mask, 'Curve Regulation'] = 'up'
-    df.loc[p_mask & effect_mask & down_mask, 'Curve Regulation'] = 'down'
+    df.loc[p_mask & effect_mask & up_mask & pec50_mask, 'Curve Regulation'] = 'up'
+    df.loc[p_mask & effect_mask & down_mask & pec50_mask, 'Curve Regulation'] = 'down'
     df['Curve Regulation'] = df['Curve Regulation'].replace('', np.nan)
 
     # Apply the min_signal filter by removing potential regulations that are below the min signal threshold.
@@ -329,6 +333,13 @@ def calculate_qvalue(df, sort_cols, sort_ascendings, decoy_col, q_col_name='Curv
     df : pd.DataFrame
         df with the added q_value column
     """
+    # check input sort tables
+    assert (len(sort_cols) > 0) and (len(sort_ascendings) > 0)
+
+    # Add the decoys in the correct order for the correct cummin rollup, such that with equal sort the decoy is recognized first.
+    sort_cols = sort_cols + [decoy_col]
+    sort_ascendings = sort_ascendings + [False]
+
     # Sort values
     df_sorted = df.dropna(subset=sort_cols).sort_values(by=sort_cols, ascending=sort_ascendings)
 
@@ -345,6 +356,41 @@ def calculate_qvalue(df, sort_cols, sort_ascendings, decoy_col, q_col_name='Curv
     # Add to dataframe
     df[q_col_name] = q
     return df
+
+
+def get_fdr(target_df, decoy_df, score_col, score_threshold, target_decoy_ratio=1.0):
+    """
+    Calculate the fdr based on target decoy approach for a given score and threshold.
+    Assumes equal size of target decoy data set. If not needs to be adjusted.
+
+    Parameters
+    ----------
+    target_df : pd.DataFrame
+        input data frame with at least the score col.
+    score_col : str
+        the column name of the score. This column must be present in target_df and decoy_df.
+    score_threshold : float
+        threshold value to cut true and false positives.
+    target_decoy_ratio : float, optional,
+
+    Note:
+    -----
+    The number of significant hits in decoys estimates the number of false positives.
+    The number of significant hits in target is the sum of false positives + true positives in the real data.
+    FDR = FP / (FP+TP) = <All significant | decoys> / <All significant | target>.
+    Upper bound 1.0 added for stability reasons.
+
+    Returns
+    -------
+    fdr : float
+        false discovery rate
+    """
+    n_targets = sum(target_df[score_col] > score_threshold)
+    n_decoys = sum(decoy_df[score_col] > score_threshold)
+    fdr = ((n_decoys + 1) / (n_targets + 1))
+    fdr = fdr * target_decoy_ratio
+    fdr = min(fdr, 1.0)
+    return fdr
 
 
 def get_dofs_silently(n, model, optimized):
@@ -378,6 +424,7 @@ def apply_significance_thresholds(df, config):
     not_rmse_limit = config['F Statistic']['not_rmse_limit']
     not_p_limit = config['F Statistic']['not_p_limit']
     quality_min = config['F Statistic']['quality_min']
+    pEC50_filter = config['F Statistic']['pEC50_filter']
     multiple_testing_method = config['F Statistic']['mtc_method']
     log_alpha = -np.log10(alpha)
 
@@ -400,26 +447,26 @@ def apply_significance_thresholds(df, config):
         # Correct F and p values using the SAM principle to control multiple testing
         df['Curve F_Value SAM Corrected'] = sam_correction(df['Curve F_Value'], df['Curve Fold Change'], s0=vector_s0)
         df['Curve Relevance Score'] = -np.log10(f_distribution.sf(df['Curve F_Value SAM Corrected'], dfn=dfn, dfd=dfd, scale=scale, loc=loc))
-        df = define_regulated_curves(df, 'Curve Relevance Score', log_alpha, fc_lim, not_rmse_limit, not_p_limit, quality_min)
+        df = define_regulated_curves(df, 'Curve Relevance Score', log_alpha, fc_lim, not_rmse_limit, not_p_limit, quality_min, pEC50_filter)
 
     else:
         ui.message(f' * Calculate adjusted p-values using the {multiple_testing_method} method:', end='\n')
         df['Curve P_Value adjusted'] = correct_pvalues(df['Curve P_Value'], alpha=alpha, method=multiple_testing_method)
         df['Curve Log P_Value adjusted'] = -np.log10(df['Curve P_Value adjusted'])
-        df = define_regulated_curves(df, 'Curve Log P_Value adjusted', log_alpha, fc_lim, not_rmse_limit, not_p_limit, quality_min)
+        df = define_regulated_curves(df, 'Curve Log P_Value adjusted', log_alpha, fc_lim, not_rmse_limit, not_p_limit, quality_min, pEC50_filter)
 
     return df
 
 
-def estimate_fdr(target_df, decoy_df, config):
+def estimate_qvalues(target_df, decoy_df, config):
     """
-    main function. Estimate the FDR using target-decoy approach for SAM-correction and Relevance Score.
+    main function. Estimate q-values using target-decoy approach for SAM-correction and Relevance Score.
     """
     # Check that only SAM analysis has FDR option
     multiple_testing_method = config['F Statistic']['mtc_method']
     if multiple_testing_method != 'sam':
-        ui.warning(f' * FDR estimation is only available for SAM-method and not for adjusted p-values method {multiple_testing_method}!')
-        return np.nan
+        ui.warning(f' * q value estimation is only available for SAM-method and not for adjusted p-values method {multiple_testing_method}!')
+        return None
 
     # Define sort columns for q value and make sure that they are present
     sort_cols = {'Curve Relevance Score': False, 'Curve F_Value SAM Corrected': False}
@@ -430,21 +477,43 @@ def estimate_fdr(target_df, decoy_df, config):
     # Combine target decoy data set but keep it mappable by index
     decoy_df.set_index('Name', inplace=True)
     decoy_df['Decoy'] = True
+    target_df['Decoy'] = False
     df_combined = pd.concat([target_df, decoy_df])
     assert df_combined.index.is_unique
-    df_combined['Decoy'] = df_combined['Decoy'].replace(np.nan, False)
 
-    # Calculate q value and add to target
+    # Calculate q value and add to target df
     df_combined = calculate_qvalue(df_combined, sort_cols=list(sort_cols.keys()), sort_ascendings=list(sort_cols.values()), decoy_col='Decoy', q_col_name='Curve q_Value')
     target_df['Curve q_Value'] = df_combined.loc[target_df.index, 'Curve q_Value']
     decoy_df['Curve q_Value'] = df_combined.loc[decoy_df.index, 'Curve q_Value']
     decoy_df.reset_index(inplace=True)
 
-    # Calculate FDR and report
-    regulation_mask = target_df['Curve Regulation'].isin({'up', 'down'})
-    fdr = target_df[regulation_mask]['Curve q_Value'].max()
-    ui.message(f' * Estimated FDR with given user thresholds is: {fdr:.2g}')
+
+def estimate_fdr(target_df, decoy_df, config):
+    """
+    main function. Estimate FDR using target-decoy approach for Curve Relevance Score.
+    """
+    # Check that only SAM analysis has FDR option
+    multiple_testing_method = config['F Statistic']['mtc_method']
+    if multiple_testing_method != 'sam':
+        ui.warning(f' * FDR value estimation is only available for SAM-method and not for adjusted p-values method {multiple_testing_method}!')
+        return None
+
+    # Get relevant parameters
+    log_alpha = -np.log10(config['F Statistic']['alpha'])
+    score = 'Curve Relevance Score'
+    target_decoy_ratio = len(target_df) / len(decoy_df)
+
+    # Calculate overall FDR
+    fdr_global = get_fdr(target_df, decoy_df, score, log_alpha, target_decoy_ratio)
+
+    # Calculate FDR on filtered curves
+    mask_target = target_df['Curve Regulation'].isin({'up', 'down'})
+    mask_decoy = decoy_df['Curve Regulation'].isin({'up', 'down'})
+    fdr_filtered = get_fdr(target_df[mask_target], decoy_df[mask_decoy], score, log_alpha, target_decoy_ratio)
+
+    # Report global and filtered FDR
+    ui.message(f' * Estimated FDR for given user threshold is: {fdr_filtered:.4g}')
     if config['Paths'].get('fdr_file'):
         with open(config['Paths']['fdr_file'], 'w') as out_file:
-            out_file.write(f'{fdr:.4g}')
-    return fdr
+            out_file.write(f'Global FDR: {fdr_global:.4g}\n')
+            out_file.write(f'Filtered FDR: {fdr_filtered:.4g}\n')

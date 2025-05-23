@@ -7,7 +7,7 @@
 # usage:
 # python -m curve_curator [-h] [-r [RANDOM]] [-b] <PARAM PATH>
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 from pathlib import Path
@@ -15,6 +15,7 @@ import argparse
 
 from . import user_interface as ui
 from . import data_parser
+from . import toml_parser
 from . import data_simulator
 from . import quantification
 from . import thresholding
@@ -64,8 +65,10 @@ def main():
 
     # Handle batch process.
     if args.batch:
+        #  Read all non-empty and non-comment lines from batch file.
         with open(args.path) as f:
-            toml_files = f.read().splitlines()
+            batch_lines = [line for line in f.read().splitlines() if line.strip()]
+            toml_files = [line for line in batch_lines if (line[0] != '#')]
         ui.message(f' * Batch process detected with {len(toml_files)} toml files.')
         #  Verify that all paths exist in the batch file. If not warn user and exit the program.
         for tf in toml_files:
@@ -91,14 +94,14 @@ def main():
             ui.message(f' * Processing {i+1} of {len(toml_files)} data sets.', terminal_only=True)
 
         # Check the input file is a toml file
-        if not ui.is_toml_file(tf):
+        if not toml_parser.is_toml_file(tf):
             ui.error(f' * The given file is not a TOML parameter file !\n * If it\'s a batch file make sure you activate the batch mode with --batch.')
             ui.doneline()
             continue
 
         # Load config
-        config = ui.load_toml(tf, random_mode=bool(args.random))
-        config = ui.set_default_values(config)
+        config = toml_parser.load_toml(tf, random_mode=bool(args.random))
+        config = toml_parser.set_default_values(config)
 
         # In the random mode sample random data (H0=True)
         if args.random is not None:
@@ -118,7 +121,8 @@ def main():
             decoys = data_simulator.get_decoys(data, config=config)
             decoys = quantification.run_pipeline(decoys, config=config, decoy_mode=True)
             decoys = thresholding.apply_significance_thresholds(decoys, config=config)
-            fdr = thresholding.estimate_fdr(data, decoys, config=config)
+            thresholding.estimate_qvalues(data, decoys, config=config)
+            thresholding.estimate_fdr(data, decoys, config)
             decoys.to_csv(config['Paths']['decoys_file'], sep='\t', index=False)
 
         # Save curve file

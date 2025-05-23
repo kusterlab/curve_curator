@@ -10,3 +10,5 @@ system_test.sh
 build
 htmlcov
 dist
+.DS_Store
+.ipynb_checkpoints

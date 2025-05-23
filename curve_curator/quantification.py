@@ -1,7 +1,7 @@
 # quantification.py
 # Functions for processing and fitting dose-response curves.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 
@@ -267,7 +267,7 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
 
     # ignore curve if there are to little number of data points and don't fit
     if n <= 4:
-        return 19 * (np.nan,)
+        return 20 * (np.nan,)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
     # If replicated doses exist, they must be aggregated before the linear interpolation is done to prevent arbitrary steps in the function.
@@ -334,11 +334,11 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     rmse = M1.calculate_rmse(x, y)
     r2 = M1.calculate_r2(x, y)
     fold_change = M1.calculate_fold_change(x[1:], to_control=fit_params['control_fold_change'])
-    auc = M1.get_auc(x)
+    auc = M1.calculate_auc(x)
 
     # Calculate f-statistic
-    m0_sse = M0.calculate_sum_squared_residuals(x, y) + 1e-16
-    m1_sse = M1.calculate_sum_squared_residuals(x, y) + 1e-16
+    m0_sse = M0.calculate_sum_squared_residuals(x, y) + 1e-20
+    m1_sse = M1.calculate_sum_squared_residuals(x, y) + 1e-20
     m1_k = M1.n_parameter()
     f_statistic = (m0_sse - m1_sse) / m1_sse * (n / m1_k)
     f_statistic = f_statistic if f_statistic >= 0.0 else 0.0
@@ -528,7 +528,7 @@ def run_pipeline(df, config, decoy_mode=False):
     if fit_params['interpolation']:
         fit_params['x_interpolated'] = build_interpolation_points(drug_log_concs_sorted)
         ui.message(' * Fit will use interpolation X values:', end='\n')
-        ui.message('   {}'.format(list(map(lambda v: round(v, 2), fit_params['x_interpolated']))))
+        ui.message('   {}'.format(list(map(lambda v: round(float(v), 2), fit_params['x_interpolated']))))
 
     # Fit the logistic model using multiple cores and optional processing parameters
     n_cores = config['Processing']['available_cores']

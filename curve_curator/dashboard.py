@@ -1,7 +1,7 @@
 # dashboard.py
 # Data analysis platform based on interactive Bokeh plots with HTML/JS output.
 #
-# Florian P. Bayer - 2024
+# Florian P. Bayer - 2025
 #
 
 import numpy as np
@@ -252,8 +252,7 @@ def get_js_source_selection_code(cols_ratio):
         curve_fit.data['names'] = names_curve;
 
         // Adjust the y range of the plot if there is a bigger value
-        //var y_max = Math.max(... y_values_scatter, ... y_values_curve.flat());
-        var y_max = Math.max(... y_values_scatter);
+        var y_max = Math.max(... y_values_scatter.filter(v => Number.isFinite(v)));
         if (y_max > 1.905){
             CurveFig.y_range.end = y_max + y_max * 0.05;
         } else {
@@ -296,12 +295,18 @@ def get_js_table_selection_code(col):
         """,
 
         # Dynamically select the input column
-        f"const sequence = source.data['{col}'];",
+        f"var sequence = source.data['{col}'];",
 
         """
         var user_regex = String(text_input.value);
         var n_rows = source.data['index'].length;
         var visibility = selection_view.filters[0].booleans;
+
+        // remove small chars in case-insensitive mode
+        if (case_sensitive.active.length == 0) {
+            user_regex = user_regex.toUpperCase();
+            sequence = sequence.map(s => s.toUpperCase());
+        };
 
         // Prevent to unspecific searches
         if (user_regex.length < 2){
@@ -345,7 +350,7 @@ def get_js_visibility_toggle_code():
         var signal_mask = true;
 
         //console.log("The data set view was changed to: ", reg_filter);
-        
+
         // Function to compute the product of p1 and p2
         function is_within_limits(value, limit) {
             return (value >= limit[0]) && (value <= limit[1]);
@@ -422,9 +427,9 @@ def get_js_fig1_yaxis_selection():
                     threshold_v0.visible = false;
                     threshold_v1.visible = true;
                 } else {
-                    console.log('This p-value toggle value is not implemented: ', p_value_toggle.active);              
+                    console.log('This p-value toggle value is not implemented: ', p_value_toggle.active);
                 };
-                
+
                 // Adjust the x & y axis
                 fig.title.text = 'Volcano Plot';
                 fig.y_range.start = 0; // actual value
@@ -436,11 +441,11 @@ def get_js_fig1_yaxis_selection():
 
                 // Show the all curves by default (label index 0)
                 regulation_toggle.active = 0;
-                
+
                 // Hide and show elements
                 p_value_toggle.visible = true;
                 color_bar.visible = true;
-                
+
                 // Hide fold change asymptotes for sam method as there is a continuous threshold line v
                 if (volcano_params['method'] == 'sam') {
                     threshold_p.visible = false;
@@ -455,7 +460,7 @@ def get_js_fig1_yaxis_selection():
                 scatter.selection_glyph.y.field = 'pEC50';
                 scatter.nonselection_glyph.y.field = 'pEC50';
                 fig.title.text = 'Potency Plot';
-                
+
                 // Adjust the x & y axis
                 fig.y_range.start = potency_range[0] - 0.1;
                 fig.y_range.reset_start = potency_range[0] - 0.1;
@@ -469,7 +474,7 @@ def get_js_fig1_yaxis_selection():
 
                 // Hide the significant curves only by default (label index 1)
                 regulation_toggle.active = 1;
-                
+
                 // Hide and show elements
                 p_value_toggle.visible = false;
                 //color_bar.visible = false;
@@ -607,6 +612,10 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     signal_slider = RangeSlider(start=signal_slider_params[0], end=signal_slider_params[3], value=signal_slider_params[1:3],
                                 step=slider_steps, title=r"Signal Range Selection", margin=margin, visible=plot_signal)
 
+    # Case-sensitive checker
+    margin = (17, 5, 30, 5)  # (Top, right, bottom, left)
+    case_senitive_checkbox = CheckboxGroup(labels=["case-sensitive search"], active=[0], margin=margin, visible=True)
+
     # Name Filter
     margin = (10, 5, 30, 5)  # (Top, right, bottom, left)
     visibility = 'Name' in df.columns
@@ -632,7 +641,8 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
 
     # This default filter should reflect the default option selection based on sliders and buttons at the start
     # The View object allows for interactive subsetting of the data
-    view_selected_curves = CDSView(filter=BooleanFilter(np.full(len(df), True).tolist()))
+    inital_selection = df['pEC50'].between(*pec50_slider_params[1:3])
+    view_selected_curves = CDSView(filter=BooleanFilter(inital_selection.values.tolist()))
     source_view_table = CDSView(filter=BooleanFilter(np.full(len(df), False).tolist()))
 
     #
@@ -839,7 +849,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
         hist, edges = [0, 1], [-2, -1, 0]
     potency_source = ColumnDataSource(data=dict(xs=[[0, 1]], ys=[[np.nan, np.nan]], labels=[['']], names=[['']]))
     potency_threshold1_source = ColumnDataSource(data=dict(x=[0, 1], y=[pec50_slider_params[1], pec50_slider_params[1]], labels=['Threshold', 'Threshold']))
-    potency_threshold2_source = ColumnDataSource(data=dict(x=[0, 1], y=[pec50_slider_params[3], pec50_slider_params[3]], labels=['Threshold', 'Threshold']))
+    potency_threshold2_source = ColumnDataSource(data=dict(x=[0, 1], y=[pec50_slider_params[2], pec50_slider_params[2]], labels=['Threshold', 'Threshold']))
 
     # Plot the data distribution
     hist_boxes_5 = fig5.quad(top=edges[:-1], bottom=edges[1:], left=0, right=hist, fill_color="gray", line_color="white", alpha=1)
@@ -949,6 +959,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     js_code = get_js_table_selection_code('Name')
     name_search_button.js_on_click(CustomJS(args=dict(source=source,
                                                       text_input=name_input,
+                                                      case_sensitive=case_senitive_checkbox,
                                                       selection_view=view_selected_curves),
                                             code=js_code))
 
@@ -956,6 +967,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     js_code = get_js_table_selection_code('Modified sequence')
     modseq_search_button.js_on_click(CustomJS(args=dict(source=source,
                                                         text_input=modseq_input,
+                                                        case_sensitive=case_senitive_checkbox,
                                                         selection_view=view_selected_curves),
                                               code=js_code))
 
@@ -963,6 +975,7 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
     js_code = get_js_table_selection_code('Genes')
     gene_search_button.js_on_click(CustomJS(args=dict(source=source,
                                                       text_input=gene_input,
+                                                      case_sensitive=case_senitive_checkbox,
                                                       selection_view=view_selected_curves),
                                             code=js_code))
 
@@ -1050,8 +1063,9 @@ def dashboard(df, title, out_path, drug_doses, drug_unit, cols_ratio, model, f_s
                    [fig1, fig2, fig5, fig3, fig4],
                    [selection_title],
                    [pec50_slider, score_slider, signal_slider],
-                   [name_input, name_search_button, modseq_input, modseq_search_button, gene_input, gene_search_button],
+                   [name_input, name_search_button, modseq_input, modseq_search_button, gene_input, gene_search_button, case_senitive_checkbox],
                    [data_table]])
+
     # output to HTML file
     output_file(f"{out_path}", title=title)
     save(grid)
@@ -1164,20 +1178,27 @@ def render(df, config):
     score_slider_params = (min_score, min_score, max_score, max_score)
 
     # Define the pEC50 range dynamically which are the extreme doses +- 3 order of magnitude
+    pEC50_filter = config['F Statistic']['pEC50_filter']
     min_pec50 = round(min(drug_log_concs) - 4, 1)
     max_pec50 = round(max(drug_log_concs) + 4, 1)
     df['pEC50'] = df['pEC50'].clip(lower=min_pec50, upper=max_pec50)
     df = df.sort_values(by='pEC50').round(3)
-    pec50_slider_params = (min_pec50, min_pec50, max_pec50, max_pec50)
+    min_pec50_user = min_pec50 if min_pec50 > pEC50_filter[0] else pEC50_filter[0]
+    max_pec50_user = max_pec50 if max_pec50 < pEC50_filter[1] else pEC50_filter[1]
+    pec50_slider_params = (min_pec50, min_pec50_user, max_pec50_user, max_pec50)
 
     # Encode regulation to all=0, regulated=1, not=2 for radio button selection
     regulation_map = {'up': 1, 'down': 1, 'not': 2}
     df['Curve Regulation'] = df['Curve Regulation'].apply(lambda x: regulation_map.get(x, 0))
 
-    # Define plot y ranges dynamically or use default
+    # Define plot y ranges dynamically or use default. 100 is the maximum possible and will overwrite values in the dashboard.
+    # The minimal plot y range is 8. This is true for the p-value [0] and the relevance score [1].
+    df[volcano_params['y_col_name_0']] = df[volcano_params['y_col_name_0']].clip(0, 100)
     y_volcano_max = df.loc[(df['Curve Regulation'] == 1), volcano_params['y_col_name_0']].max() + 0.1
     y_volcano_max = y_volcano_max if y_volcano_max > 8 else 8
     volcano_params['y_range_p0'] = (0, y_volcano_max)
+
+    df[volcano_params['y_col_name_1']] = df[volcano_params['y_col_name_1']].clip(0, 100)
     y_volcano_max = df.loc[(df['Curve Regulation'] == 1),  volcano_params['y_col_name_1']].max() + 0.1
     y_volcano_max = y_volcano_max if y_volcano_max > 8 else 8
     volcano_params['y_range_p1'] = (0, y_volcano_max)

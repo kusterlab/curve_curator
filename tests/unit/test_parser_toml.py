@@ -12,12 +12,14 @@ import curve_curator.user_interface as ui
 # Function to parse the console stream while testing for double checking output.
 def parse_console(func, **kwargs):
     capturedOutput = io.StringIO()                 # Create StringIO.
+    original_stdout = sys.stdout
     sys.stdout = capturedOutput                    # Redirect stdout.
     try:
         func(**kwargs)                             # Call function ...
     except:                                        # and continue no matter what!
         pass
-    sys.stdout = sys.__stdout__                    # Reset redirect.
+    finally:
+        sys.stdout = original_stdout                # Reset redirect.
     return capturedOutput.getvalue()
 
 # For console debug purpose to print out.

@@ -1,3 +1,11 @@
+v0.6.0
+- Improve the dashboard (#30, #32, #36, #41)
+- Improve UI with toml parsing, automatic issue detection, and better batch file logic (#44)
+- Add potency range filter with global and filtered FDR estimation (#41)
+- Improved API usage with new examples
+- Extend unit testing and small fixes associated with it (#16, #33)
+- Improve speed with newer scipy versions (#42)
+
 v0.5.1
 - Improve the stability of the dashboard (#27)
 - Add DIA-NN peptide parser (#28)

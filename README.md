@@ -1,10 +1,11 @@
 ![CurveCurator](logo.png)
 
 
-[![DOI](https://img.shields.io/badge/Paper-10.1038%2Fs41467--023--43696--z-be2635?logo=Paper&link=https%3A%2F%2Fdoi.org%2F10.1038%2Fs41467-023-43696-z)](https://doi.org/10.1038/s41467-023-43696-z)
+[![DOI](https://img.shields.io/badge/paper-10.1038%2Fs41467--023--43696--z-be2635?logo=Paper&link=https%3A%2F%2Fdoi.org%2F10.1038%2Fs41467-023-43696-z)](https://doi.org/10.1038/s41467-023-43696-z)
+[![Static Badge](https://img.shields.io/badge/short_summary-Wiley-6E0B2F?link=https%3A%2F%2Fanalyticalscience.wiley.com%2Fcontent%2Farticle-do%2Fstatistical-analysis-dose-response-curves)](https://analyticalscience.wiley.com/content/article-do/statistical-analysis-dose-response-curves)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8399823.svg)](https://doi.org/10.5281/zenodo.8399823)
 [![PyPI version](https://badge.fury.io/py/curve-curator.svg)](https://badge.fury.io/py/curve-curator)
-![Python versions](https://img.shields.io/badge/python-3.11%20|%203.12-green)
+![Python versions](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-green)
 
 
 # CurveCurator
@@ -148,6 +149,7 @@ CurveCurator toml files have up to 7 `[sections]`. Obligatory ***`keys`*** are i
 - `['F Statistic']` contains all optional parameters that are related to the f-statistic, p-value calculation, and significance thresholding. Default values are optimized for the unconstrained 4-parameter sigmoidal curve. 
 	- ***`alpha`*** the significance threshold limit. This is the maximal p-value a curve can have.
 	- ***`fc_lim`*** the fold change threshold limit. This is the minimal log2 fold change a curve can have (x-axis volcano plot). To convert it to a ratio threshold equivalent, you can transform it like this: ratio_lim = 2^(+-)fc_lim.
+ 	- `pEC50_filter` the range of valid pEC50 values. Relevant curves outside this pEC50 range will not be classified as down or up in the result files. This additional filter will be also be applied for decoy-curves in the "filtered FDR" estimation.
 	- `loc`  location offset of the F-distribution.
 	- `scale` scaling parameter of the F-distribution
 	- `dfn` degrees of freedom of F-nominator (~ number of model parameters).
@@ -215,15 +217,19 @@ The **Table** provides more detailed information about each curve. By clicking o
 ## FAQ:
 Q: The regulation column in the curves files has categories up, down, not. However, many rows are not classified into these categories. Why? and How should I interpret this?
 
-A: Unclassified curves should be treated very carefully. In principle, there are two reasons why a curve regulation type could not be determined. First, the curve is too noisy. There is no apparent regulation, but the data points are so scattery that one should simply not interpret anything here. Second, the curve has low noise but also exhibits some sort of faint regulation; just the fold change was not big enough to render it relevant. However, it would be an overinterpretation to call these curves not regulated.
+A: Unclassified curves should be treated very carefully. In principle, there are two reasons why a curve regulation type could not be determined. First, the curve is too noisy. There is no apparent regulation, but the data points are so scattery that one should simply not interpret anything here. Second, the curve has low noise but also exhibits some sort of faint regulation; just the fold change was not big enough to render it relevant. However, it would be an overinterpretation to call these curves not regulated. The `not_rmse_limit` parameter can tune how much noise the not classification can tolerate. The `alpha` and `fc_lim` parameters control how much noise the down and up can tolerate and how much effect is required.
 
 Q: How to deal with replicated doses in one experiment?
 
-A: Curve curator can deal with replicated data. It is also possible to have only replicated controls and no replicates for the same doses. There are different possibilities for handling replicates in CurveCurator. 1) It's possible to get a single curve from replicated data where the replicated doses were aggregated to a single average point before the fitting. 2) It's possible to get a single curve with all replicated ratios being fitted simultaneously. In the dashboard, you are able to see all individual observations around the estimated curve. 3) It's possible to get an independent curve fit for each replicate experiment. Depending on the selected strategy 1-3, the data structure and the toml file need to be adapted accordingly. 
+A: Curve curator can deal with replicated data. It is also possible to have only replicated controls and no replicates for the same doses. There are different possibilities for handling replicates in CurveCurator. 1) It's possible to get a single curve from replicated data where the replicated doses were aggregated to a single average point before the fitting. 2) It's possible to get a single curve with all replicated ratios being fitted simultaneously. In the dashboard, you are able to see all individual observations around the estimated curve. 3) It's possible to get an independent curve fit for each replicate experiment. Depending on the selected strategy 1-3, the data structure and the toml file need to be adapted accordingly.
 
 Q: What is the Relevance Score?
 
-A: After fitting the curve model to the observed response, CurveCurator calculates an F-value and p-value for each regression curve. The user has then defined an alpha threshold (to control statistical significance) and a fold change threshold (to define biological relevance) that are both used to find high-quality curves in the dataset. The relevance score combines these two properties of significance and biological relevance into a single number for each curve. Consequently, the previous hyperbolic decision boundary in the classical volcano plot will be a single relevance threshold in the alternative volcano plot after the transformation.
+A: After fitting the curve model to the observed response, CurveCurator calculates an F-value and p-value for each regression curve. The user has then defined an alpha threshold (to control statistical significance, `alpha`) and a fold change threshold (to define biological relevance, `fc_lim`) that are both used to find high-quality curves in the dataset. The relevance score combines these two properties of significance and biological relevance into a single number for each curve. Consequently, the previous hyperbolic decision boundary in the classical volcano plot will be a single relevance threshold in the alternative volcano plot after the transformation.
+
+Q: What is the difference between global and filtered FDR? How is it calculated? Should I adjust to a preset FDR value, e.g. 5%?
+
+A: CurveCurator calculates the false discovery rate (FDR) by generating decoy curves, if you activate the `--fdr` option in the command line. Decoy curves are false by definition and are simulated based on the estimated measurement variance of the entire experimental dataset. The number of decoy curves that pass the relevance boundary gives an estimate of the expected number of false positives in the experimental data. This is the "global FDR" that CurveCurator reports in the fdr.txt file. If you specify additional curve filters, e.g. a pEC50 filter, experimental and decoy curves will be subject to these additional filters. The resulting "filtered FDR" is also reported in the fdr.txt file. Since the FDR is a function of the relevance score, which depends on both the alpha limit and fold-change limit, changing the threshold to a predefined FDR will inevitably change both limits. Typically, the FDR is quite low after the relevance procedure, and by increasing the FDR, the biological importance gets weakened. In light of this, we recommend sticking to the alpha and fold change limit you set before and just being happy that you don't have a lot of false positives. If your FDR estimate turns out too high, keep the fold-change limit and increase the alpha stringency.
 
 Q: Can CurveCurator deal with data other than dose-response data, such as temperature-response or time-response data?
 
@@ -235,4 +241,4 @@ A: Unfortunately, this is not possible at the moment. Please split your data by 
 
 Q: Where can I get more information and help?
 
-A: We added many additional information to the [supplementary text](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-023-43696-z/MediaObjects/41467_2023_43696_MOESM1_ESM.pdf 'supplementary text') of the original CurveCurator publication starting from page 13.
+A: We added many additional information to the [supplementary text](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-023-43696-z/MediaObjects/41467_2023_43696_MOESM1_ESM.pdf 'supplementary text') of the original CurveCurator publication starting from page 13. If you have further suggestions or questions, please leave an issue message. We are happy to help you out. 

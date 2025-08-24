@@ -195,7 +195,7 @@ def check_correct_experiment_setup(config):
         raise ValueError("[Experiment] 'control_experiment' contains duplicates.")
 
 
-def check_toml_params(config):
+def check_toml_params(config, random_mode=False):
     """
     Check the toml file for validity and warn the user if unexpected values are detected or raise an value error
     if implausible value are detected.
@@ -204,6 +204,8 @@ def check_toml_params(config):
     ----------
     config : toml object (Dict of dicts)
         toml file with all the parameters.
+    random_mode : bool, optional
+        if CurveCurator is run in random_mode, default is False.
 
     Returns
     -------
@@ -230,11 +232,15 @@ def check_toml_params(config):
         #
         # ['Paths']
         #
-        assert_section_exits('Paths', config)
-        check_for_unknown_keys('Paths', config)
-        required_keys = ['input_file']
-        check_for_required_keys('Paths', config, required_keys)
-        check_for_correct_values('Paths', config, REFERENCE['Paths'], requirement=lambda v: len(v) > 0)
+        # Path(s) are not required in random mode. But needs to be checked if existing.
+        if (not random_mode) or ('Paths' in config):
+            assert_section_exits('Paths', config)
+            check_for_unknown_keys('Paths', config)
+        if (not random_mode):
+            required_keys = ['input_file']
+            check_for_required_keys('Paths', config, required_keys)
+        if ('Paths' in config):
+            check_for_correct_values('Paths', config, REFERENCE['Paths'], requirement=lambda v: len(v) > 0)
 
         #
         # ['Processing']
@@ -319,20 +325,20 @@ def load_toml(path, random_mode=False):
 
     # Check the parameter file values
     try:
-        check_toml_params(config)
+        check_toml_params(config, random_mode=random_mode)
     except ValueError as parameter_error:
             ui.error('Issue(s) with the toml file found!! Please check.', end='\n')
             ui.error(parameter_error)
             exit()
 
-    # Check the input file exists
-    try:
-        update_toml_paths(config)
-        ui.check_path(config['Paths']['input_file'])
-    except FileNotFoundError:
-        if not random_mode:
-            ui.error('Issue(s) with the toml file found!! The input file cannot be found! Please check.')
-            exit()
+    # Check the input file exists. No input required in random mode.
+    if not random_mode:
+        try:
+            update_toml_paths(config)
+            ui.check_path(config['Paths']['input_file'])
+        except FileNotFoundError:
+                ui.error('Issue(s) with the toml file found!! The input file cannot be found! Please check.')
+                exit()
     return config
 
 

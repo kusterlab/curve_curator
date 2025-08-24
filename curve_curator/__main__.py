@@ -105,10 +105,13 @@ def main():
 
         # In the random mode sample random data (H0=True)
         if args.random is not None:
-            data_simulator.sample(config, n=args.random)
+            data = data_simulator.sample(config, n=args.random)
+
+        # Else load user data from config path
+        else:
+            data = data_parser.load(config)
 
         # Run the pipeline for target curves
-        data = data_parser.load(config)
         data = quantification.run_pipeline(data, config=config)
         data = thresholding.apply_significance_thresholds(data, config=config)
 

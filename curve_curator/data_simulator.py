@@ -141,13 +141,15 @@ def sample(config, n):
     experiments = np.array(config['Experiment']['experiments'])
     cols = [f'Raw {e}' for e in experiments]
 
-    # Simulate curves
+    # Simulate random curves
     ui.message(f' * Simulating {n} random curves:')
     df = simulate_h0_dataset(cols, n)
-
-    # Save files
-    df.to_csv(config['Paths']['input_file'], sep='\t')
     ui.message(f' * Simulation done.')
+
+    # Add 'random' to name ID to indicate a random curve
+    df.index = 'random ' + df.index.astype('str')
+    df = df.reset_index()
+    return df
 
 
 def get_decoys(df, config):

@@ -7,13 +7,11 @@
 import numpy as np
 import pandas as pd
 from scipy import stats
+import tqdm
 
 from . import user_interface as ui
 from . import toolbox as tool
 from .models import LogisticModel
-
-from tqdm.autonotebook import tqdm
-tqdm.pandas()
 
 
 # The intrinsic variance models. Estimated from decryptM data.
@@ -44,7 +42,7 @@ def simulate_h0_dataset(cols, n_curves):
 
     # Sample observations for each curve which is y_i = 1 * Error ~ N(1, sts)
     values = np.full((n_curves, n_doses), np.nan)
-    for i, s in tqdm(enumerate(df['STD']), total=n_curves):
+    for i, s in tqdm.tqdm(enumerate(df['STD']), total=n_curves):
         values[i, :] = stats.norm.rvs(loc=1, scale=s, size=n_doses)
     df[cols] = values
 
@@ -117,7 +115,7 @@ def simulate_decoys(n_decoys, cols, empirical_noise):
 
     # Sample decoy curves which is y_i = 1 * Error ~ N(1, noise)
     decoys = np.full((n_decoys, n_doses), np.nan, dtype=float)
-    for i, noise in tqdm(enumerate(sampled_noise), total=n_decoys):
+    for i, noise in tqdm.tqdm(enumerate(sampled_noise), total=n_decoys):
         decoy_noise = min_noise
         while decoy_noise <= min_noise:
             decoy = stats.norm.rvs(loc=1, scale=noise, size=n_doses)

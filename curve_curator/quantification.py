@@ -14,9 +14,6 @@ from . import toolbox as tool
 from . import user_interface as ui
 from .models import MeanModel, LogisticModel
 
-from tqdm.autonotebook import tqdm
-tqdm.pandas()
-
 
 def filter_nans(df, cols, max_missing):
     """
@@ -203,7 +200,7 @@ def build_interpolation_points(x, exclude_low_n=0, exclude_top_n=0, interpolatio
             raise ValueError('Wrong interpolation size triggered while-loop escape.')
 
 
-def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
+def fit_model(y_data, x_data, models, fit_params, f_statistic_params):
     """
     Fits the model M0 and M1 to the given x and y data. Particular execution is adjusted via the fit and f_statistic parameter dictionaries.
     First, x and y values are prepared and then fitted using the specified method. Then, parameter estimates, fold changes, and errors are calculated.
@@ -215,10 +212,10 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
         Series that contains the ratio y values.
     x_data : array-like
         An array-like object containing the drug concentrations in log space.
-    M0 : MeanModel object
-        An MeanModel instance from curve_curator.models.
-    M1 : LogisticModel object
-        An LogisticModel instance from curve_curator.models.
+    models : tuple(CurveCurator Model class, CurveCurator Model class)
+        A tuple containing the CurveCurator class models to use. Must have the length two.
+        models[0] => H0 model (null).
+        models[1] => H1 model (alternative).
     fit_params : dict
         Parameter dictionary which adjusts the specific fitting procedures.
         It must contain at least the following key-value pairs:
@@ -243,10 +240,19 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     -------
     *p_opt, fold_change, r2, M1.noise, *p_err, intercept, M0_noise, rmse, M1_likelihood, M0_likelihood, f_statistic, p_values
     """
-    # Makes sure there is no carryover in the for-loop
-    M1.reset()
+    # Setup the H0 (null) and H1 (alternative) models.
+    M0 = models[0](max_iterations=fit_params.get('max_iterations'))
+    M1 = models[1](slope=fit_params.get('slope'),
+                   front=fit_params.get('front'),
+                   back=fit_params.get('back'),
+                   max_iterations=fit_params.get('max_iterations'))
+
+    # set boundaries for
+    M0.set_boundaries()
+    M1.set_boundaries(x_data)
 
     # Define x & y data for the fit
+    idx = y_data.name
     y_data = y_data.values
     x_control = -np.inf
     y_control = 1
@@ -267,7 +273,8 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
 
     # ignore curve if there are to little number of data points and don't fit
     if n <= 4:
-        return 20 * (np.nan,)
+        all_nan = 20 * (np.nan,)
+        return (idx, *all_nan)
 
     # Interpolation helper points if wanted by the user. These are only applied during the fitting. Evaluation is purely based on the data.
     # If replicated doses exist, they must be aggregated before the linear interpolation is done to prevent arbitrary steps in the function.
@@ -353,10 +360,10 @@ def fit_model(y_data, x_data, M0, M1, fit_params, f_statistic_params):
     p_opt = M1.get_all_parameters().values()
     p_err = M1.get_params_error().values()
 
-    return (*p_opt, fold_change, auc, rmse, r2, M1.noise, *p_err, m0_intercept, M0.noise, m0_rmse, M1.likelihood, M0.likelihood, f_statistic, p_values)
+    return (idx, *p_opt, fold_change, auc, rmse, r2, M1.noise, *p_err, m0_intercept, M0.noise, m0_rmse, M1.likelihood, M0.likelihood, f_statistic, p_values)
 
 
-def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
+def add_logistic_model(df, ratio_cols, x_data, n_cores, f_statistic_params, fit_params):
     """
     Fits a logistic model to the ratio columns. This is a wrapper function for the actual "fit_logistic_function(...)".
 
@@ -368,6 +375,17 @@ def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
         A array-like object containing the column labels of the ratio data.
     x_data : array_like
         A array-like object containing the drug concentrations in log space.
+    n_cores : int
+        Number of cores to fit in parallel.
+    f_statistic_params : dict
+        Parameter dictionary which adjusts the specific fitting procedures.
+         It must contain at least the following key-value pairs:
+            optimized_dofs : {True, False}
+            scale : float
+            loc : float
+        The following key-value pairs are optional:
+            dfn : float
+            dfd : float
     fit_params : dict
         Parameter dictionary which adjusts the specific fitting procedures.
         It must contain at least the following key-value pairs:
@@ -382,49 +400,26 @@ def add_logistic_model(df, ratio_cols, x_data, f_statistic_params, fit_params):
             interpolation : {True, False}
             x_interpolated : array-like, if interpolation is True
             max_iterations : int
-    f_statistic_params : dict
-        Parameter dictionary which adjusts the specific fitting procedures.
-         It must contain at least the following key-value pairs:
-            optimized_dofs : {True, False}
-            scale : float
-            loc : float
-        The following key-value pairs are optional:
-            dfn : float
-            dfd : float
 
     Returns
     -------
     df : pd.DataFrame
         Output data frame with the fitted columns
     """
-    # Define the logistic Model
-    logistic_model = LogisticModel(slope=fit_params.get('slope'), front=fit_params.get('front'), back=fit_params.get('back'),
-                                   max_iterations=fit_params.get('max_iterations'))
-    logistic_model.set_boundaries(x_data)
-
-    # Define the null model
-    null_model = MeanModel(max_iterations=fit_params.get('max_iterations'))
-    null_model.set_boundaries()
-
-    # Fit the ratio data  to the logistic function
-    fits = df[ratio_cols].progress_apply(fit_model,
-                                         x_data=x_data,
-                                         M0=null_model,
-                                         M1=logistic_model,
-                                         fit_params=fit_params,
-                                         f_statistic_params=f_statistic_params,
-                                         axis=1)
-
-    # Typecast - apply output to DataFrame with the following column names
+    # Run fit_model function in parallel fashion
     fit_cols = ['pEC50', 'Curve Slope', 'Curve Front', 'Curve Back', 'Curve Fold Change', 'Curve AUC', 'Curve RMSE', 'Curve R2', 'Curve Noise',
                 'pEC50 Error', 'Curve Slope Error', 'Curve Front Error', 'Curve Back Error',
                 'Null Model', 'Null Noise', 'Null RMSE', 'Curve Likelihood', 'Curve Null Likelihood', 'Curve F_Value', 'Curve P_Value']
-    df[fit_cols] = pd.DataFrame(data=fits.tolist(), columns=fit_cols, index=df.index)
-    df['Curve Log P_Value'] = -np.log10(df['Curve P_Value'])
+    fit_model_kwargs = {'x_data':x_data, 'models':(MeanModel, LogisticModel), 'fit_params':fit_params, 'f_statistic_params':f_statistic_params}
+    fit_df = tool.parallelize_dataframe(df[ratio_cols], func=fit_model, return_cols=fit_cols, func_kwargs=fit_model_kwargs, n_cores=n_cores)
+    fit_df['Curve Log P_Value'] = -np.log10(fit_df['Curve P_Value'])
 
     # Only keep the likelihood for MLE estimation
     if fit_params['type'] != 'MLE':
-        df.drop(columns=['Curve Noise', 'Null Noise', 'Curve Likelihood', 'Curve Null Likelihood'], inplace=True)
+        fit_df.drop(columns=['Curve Noise', 'Null Noise', 'Curve Likelihood', 'Curve Null Likelihood'], inplace=True)
+
+    # Merge with input df
+    df = pd.merge(df, fit_df, left_index=True, right_index=True)
     return df
 
 
@@ -534,8 +529,7 @@ def run_pipeline(df, config, decoy_mode=False):
     n_cores = config['Processing']['available_cores']
     data_type = 'decoy' if decoy_mode else 'curves'
     ui.message(f" * Fitting {data_type} parameters by {fit_params['speed']} {fit_params['type']} with {n_cores} cores:")
-    df = tool.parallelize_dataframe(df, n_cores, add_logistic_model, ratio_cols=cols_ratio_sorted, x_data=drug_log_concs_sorted,
-                                    f_statistic_params=f_statistic_params, fit_params=fit_params)
+    df = add_logistic_model(df, ratio_cols=cols_ratio_sorted, x_data=drug_log_concs_sorted, n_cores=n_cores, f_statistic_params=f_statistic_params, fit_params=fit_params)
     ui.message(f' * Fitting {data_type} parameters done !')
 
     # Warn user if fixed parameter were used

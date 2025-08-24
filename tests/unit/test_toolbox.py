@@ -1,4 +1,6 @@
+import time
 import numpy as np
+import pandas as pd
 import curve_curator.toolbox as toolbox
 
 
@@ -192,3 +194,94 @@ class TestColNameGenerator:
         expected = ['Test A', 'Test B', 'Test C', 'Test D']
         out = toolbox.build_col_names('Test {}', [*'ABCD'])
         assert all(out == expected)
+
+
+class TestParallelization:
+
+    df = pd.DataFrame({
+        'A': np.random.normal(size=100),
+        'B': np.random.normal(size=100),
+        'C': np.random.normal(size=100),
+    })
+    df.index.name='Original index'
+    return_cols = ['Mean Multi', 'STD Multi']
+    func_kwargs = {'c':1, 'd':2,}
+
+    @staticmethod
+    def slow_func(row, c=0, d=0, **kwargs):
+        time.sleep(np.random.uniform(0, 0.05))
+        out = np.mean(row) + c, np.std(row, ddof=1) + d  # np and pd have different base definitions!
+        return (row.name, *out)
+
+    def calculate_expected_output(self, c=0, d=0):
+        out = pd.concat([
+            self.df.mean(axis=1).rename(self.return_cols[0]) + c,
+            self.df.std(axis=1).rename(self.return_cols[1]) + d],
+            axis=1)
+        return out
+
+
+    #
+    # Test one core. The index is preserved with one core
+    def test_one_core(self):
+        in_df = self.df.copy()
+        expected_df = self.calculate_expected_output()
+        out_df = toolbox.parallelize_dataframe(
+            df=in_df,
+            func=self.slow_func,
+            return_cols=self.return_cols,
+            n_cores=1,
+            sorted=False,
+        )
+        assert all(in_df.index.values == out_df.index.values) and all(expected_df.index.values == out_df.index.values)
+
+        out_df = toolbox.parallelize_dataframe(
+            df=in_df,
+            func=self.slow_func,
+            return_cols=self.return_cols,
+            n_cores=1,
+            sorted=True,
+        )
+        assert all(in_df.index.values == out_df.index.values) and all(expected_df.index.values == out_df.index.values)
+        print(pd.merge(expected_df[self.return_cols[0]], out_df[self.return_cols[0]], left_index=True, right_index=True))
+        pd.testing.assert_frame_equal(out_df, expected_df)
+
+    #
+    # Test multiple cores. The index order is not preserved unless sorted.
+    def test_multiple_cores(self):
+        in_df = self.df.copy()
+        expected_df = self.calculate_expected_output()
+
+        out_df = toolbox.parallelize_dataframe(
+            df=in_df,
+            func=self.slow_func,
+            return_cols=self.return_cols,
+            n_cores=4,
+            sorted=False,
+        )
+        assert (not all(in_df.index.values == out_df.index.values)) or (not all(expected_df.index.values == out_df.index.values))
+
+        out_df = toolbox.parallelize_dataframe(
+            df=in_df,
+            func=self.slow_func,
+            return_cols=self.return_cols,
+            n_cores=4,
+            sorted=True,
+        )
+        assert all(in_df.index.values == out_df.index.values) and all(expected_df.index.values == out_df.index.values)
+        pd.testing.assert_frame_equal(out_df, expected_df)
+
+    #
+    # Test passing of kwargs to parallelized func
+    def test_kwargs(self):
+        in_df = self.df.copy()
+        expected_df = self.calculate_expected_output(**self.func_kwargs)
+        out_df = toolbox.parallelize_dataframe(
+            df=in_df,
+            func=self.slow_func,
+            func_kwargs=self.func_kwargs,
+            return_cols=self.return_cols,
+            n_cores=4,
+            sorted=True,
+        )
+        pd.testing.assert_frame_equal(out_df, expected_df)

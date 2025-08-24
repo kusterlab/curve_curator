@@ -16,33 +16,67 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
+import tqdm
 
 
-def parallelize_dataframe(df, n_cores, func, **kwargs):
+def parallelize_dataframe(df, func, return_cols, func_kwargs={}, n_cores=1, sorted=True, **kwargs):
     """
-    This function enables parallelization of a function on a data frame.
+    This function enables parallelization of a function on a data frame in a row-wise fashion.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame that stores the data
-    n_cores : int
-        number of cores to use
+        DataFrame that stores the data.
     func : object
-        The normal function that works on the data frame
-    kwargs : keyword arguments to pass on the function
+        A function that works on the data frame in a row-wise fashion.
+        The apply function must return a tuple of values.
+        The first value is expected to return the index. All other values must match to return_cols.
+    return_cols : list
+        A list of column names. One for each output value of the func.
+    func_kwargs : dict
+        keyword arguments to pass to the function
+    n_cores : int
+        number of cores to use.
+    sorted : bool, optional
+        If the return DataFrame should be sorted by the index order of the input DataFrame.
+    kwargs
 
     Returns
     -------
-    df : pd.DataFrame
-        Processed DataFrame as the function would have done it
+    out_df : pd.DataFrame (shape: df.index * return_cols)
+        Processed DataFrame by the function.
     """
-    with multiprocessing.Pool(processes=n_cores) as pool:
-        df_splited = np.array_split(df, n_cores)
-        df_processed = pool.map(functools.partial(func, **kwargs), df_splited)
-        df = pd.concat(df_processed)
+    # Perform the parallelized computation by mapping func with kwargs on rows.
+    # The imap_unordered returns a lazy generator from the multiprocessing.pool.
+    # The lazy result is then wrapped into tqdm for a progress bar.
+    # Parallel execution happens when DataFrame is built. The first return value is expected to be the index.
+    rows = (row for _, row in df.iterrows())
+    pool = multiprocessing.Pool(processes=n_cores)
+    try:
+        results = pool.imap_unordered(functools.partial(func, **func_kwargs), rows)
+        results = (r for r in tqdm.tqdm(results, total=len(df)))  # add tqdm to generator
+        out_df = pd.DataFrame.from_records(results, index='index', columns=['index'] + list(return_cols)) # build result DF
+    # Kill all workers right away with 'CRTL-C' and exit the program.
+    except KeyboardInterrupt:
         pool.terminate()
-    return df
+        raise SystemExit()
+    # Any other exception triggered will terminate and pass Exception.
+    except Exception:
+        pool.terminate()
+        raise
+    #  When done, close the pool and
+    else:
+        pool.close()
+    # Always wait for the worker processes to terminate.
+    finally:
+        pool.join()
+
+    # Sort index to input index
+    # This becomes necessary because imap_unordered returns in an arbitrary order.
+    out_df.index.name = df.index.name
+    if sorted:
+        out_df = out_df.loc[df.index]
+    return out_df
 
 
 def build_drug_log_concentrations(steps, scale=1, dmso_offset=1e3):

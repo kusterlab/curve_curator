@@ -319,13 +319,14 @@ def load_fragger_lqf_proteins(path, version, unique_cols, sum_cols=[], first_col
 #
 
 
-def load_generic(path, unique_col, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
+def load_generic(path, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
     # Load
     df = pd.read_csv(path, sep='\t', low_memory=False)
     # A unique column is a requirement for generic upload
-    if unique_col not in df.columns:
-        raise ValueError(f'The input file must contain a <{unique_col}> column. Please add to the input file.')
-    df = aggregate_duplicates(df, keys=[unique_col], sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
+    for col in unique_cols:
+        if col not in df.columns:
+            raise ValueError(f'The input file must contain a <{unique_col}> column. Please add to the input file.')
+    df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
                               concat_cols=concat_cols)
     return df
 
@@ -482,9 +483,22 @@ def load(config):
             else:
                 df['Name'] = df.index.values.copy()
 
+    elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'PEPTIDE'):
+        unique_cols = ['Modified sequence']
+        first_cols = ['Genes', 'Proteins']
+        df = load_generic(path, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols)
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+
+    elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'PROTEIN'):
+        unique_cols = ['Genes', 'Proteins']
+        df = load_generic(path, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols)
+        if 'Name' not in df.columns:
+            df['Name'] = df['Genes']
+
     elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'OTHER'):
-        unique_col = 'Name'
-        df = load_generic(path, unique_col=unique_col, sum_cols=raw_cols)
+        unique_cols = ['Name']
+        df = load_generic(path, unique_cols=unique_cols, sum_cols=raw_cols)
 
     else:
         msg = f'The combination of measurement_type = "{measurement_type}", data type = "{data_type}", and  search_engine = "{search_engine}" is currently not supported.'

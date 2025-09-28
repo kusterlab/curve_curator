@@ -100,9 +100,9 @@ For MSFRAGGER, name your TMT channels or LFQ experiments Raw_1...N. The peptide-
 <a name="tomlfile_toc"/>
 
 #### 2. Fill out the parameter toml-file for each dataset
-Each dataset comes with a parameter file in TOML format. This file contains all necessary information for each experiment / raw input as well as optional parameters so that users can adjust the pipeline specifically to an experiment. 
+Each dataset comes with a parameter file in TOML format. This file contains all necessary information for each experiment / raw input as well as optional parameters so that users can adjust the pipeline specifically to an experiment.
 
-For more information, please check out the [toml folder](example_toml_files/README.md). We provide there a detailed description of each toml parameter as well as example files that can be a starting point to setup the perfect CurveCurator pipeline for your data. If you have further questions you can always reach out for help here on GitHub.
+For more information, please check out the [toml folder](example_toml_files/). We provide there a detailed description of each toml parameter as well as example files that can be a starting point to setup the perfect CurveCurator pipeline for your data. If you have further questions you can always reach out for help here on GitHub.
 
 
 <a name="executaion_toc"/>

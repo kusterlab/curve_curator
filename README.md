@@ -88,8 +88,7 @@ If you want to update CurveCurator to the latest version after you have installe
 CurveCurator can deal with various different dose-dependent data formats and provides different customizable parsers.
 In essence, each file is a tab ("\t") separated file with data columns that have specific columns names that match to the parameter.toml file setup (see below point 2).
 
-We provide a detailed description for different data parser modes, how the data needs to be formatted accordingly, and how CurveCurator aggregates data in the [data folder](example_datasets/). If you have further questions you can always reach out for help here on GitHub.
-
+We provide a detailed description for different data parser modes, how the data needs to be formatted accordingly, and how CurveCurator aggregates data in the [data folder](example_datasets/). If you have further questions, you can always reach out for help here on GitHub.
 
 
 <a name="tomlfile_toc"/>
@@ -97,7 +96,7 @@ We provide a detailed description for different data parser modes, how the data 
 #### 2. Fill out the parameter toml-file for each dataset
 Each dataset comes with a parameter file in TOML format. This file contains all necessary information for each experiment / raw input as well as optional parameters so that users can adjust the pipeline specifically to an experiment.
 
-For more information, please check out the [toml folder](example_toml_files/). We provide there a detailed description of each toml parameter as well as example files that can be a starting point to setup the perfect CurveCurator pipeline for your data. If you have further questions you can always reach out for help here on GitHub.
+For more information, please check out the [toml folder](example_toml_files/). We provide there a detailed description of each toml parameter as well as example files that can be a starting point to setup the perfect CurveCurator pipeline for your data. If you have further questions, you can always reach out for help here on GitHub.
 
 
 <a name="executaion_toc"/>

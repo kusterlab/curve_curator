@@ -318,28 +318,37 @@ def load_fragger_lqf_proteins(path, version, unique_cols, sum_cols=[], first_col
 # Generic
 #
 
+def test_missing_columns(df, cols):
+    for col in cols:
+        if col not in df.columns:
+            ui.error(f'Column <{col}> was not found in the input file.')
+            raise ValueError(f'The input file must contain a <{cols}> column. Please add to the input file.')
+
+def remove_missing_column(df, cols):
+    cleaned_cols = []
+    for col in cols:
+        if col in df.columns:
+            cleaned_cols.append(col)
+        else:
+            ui.warning(f'Column <{col}> was not found in the input file. Continue anyways.')
+    return cleaned_cols
+
 
 def load_generic(path, unique_cols, sum_cols=[], first_cols=[], max_cols=[], min_cols=[], concat_cols=[]):
-    # Load
+    # Load and test
     df = pd.read_csv(path, sep='\t', low_memory=False)
-    # A unique column is a requirement for generic upload
-    for col in unique_cols:
-        if col not in df.columns:
-            raise ValueError(f'The input file must contain a <{unique_col}> column. Please add to the input file.')
+    test_missing_columns(df, unique_cols) # A unique column is a requirement for generic upload
+
+    # Make robust against missingness
+    sum_cols = remove_missing_column(df, sum_cols)
+    first_cols = remove_missing_column(df, first_cols)
+    max_cols = remove_missing_column(df, max_cols)
+    min_cols = remove_missing_column(df, min_cols)
+    concat_cols = remove_missing_column(df, concat_cols)
+
+    # aggregate
     df = aggregate_duplicates(df, keys=unique_cols, sum_cols=sum_cols, first_cols=first_cols, max_cols=max_cols, min_cols=min_cols,
                               concat_cols=concat_cols)
-    return df
-
-
-def load_generic_peptide_format(path):
-    # Load
-    df = pd.read_csv(path, sep='\t', low_memory=False)
-    return df
-
-
-def load_generic_protein_format(path):
-    # Load
-    df = pd.read_csv(path, sep='\t', low_memory=False)
     return df
 
 
@@ -355,7 +364,8 @@ def load(config):
     search_engine = config['Experiment'].get('search_engine', 'OTHER').upper()  # <MAXQUANT|DIANN|OTHER>
     search_engine_version = config['Experiment'].get('search_engine_version', '0.0.0')  # search engine version
     experiments = config['Experiment'].get('experiments')
-    ui.message(f' * Loading data file {path}.')
+    ui.message(f' * Loading data file: {path}.')
+    ui.message(f' * Parser mode: ({data_type}, {measurement_type}, {search_engine}).')
 
     # columns
     raw_cols = [f'Raw {e}' for e in experiments]
@@ -486,13 +496,19 @@ def load(config):
     elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'PEPTIDE'):
         unique_cols = ['Modified sequence']
         first_cols = ['Genes', 'Proteins']
-        df = load_generic(path, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols)
+        max_cols = ['Score']
+        df = load_generic(path, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols, max_cols=max_cols)
         if 'Name' not in df.columns:
-            df['Name'] = df['Genes']
+            if 'Genes' in df.columns:
+                df['Name'] = df['Genes']
+            else:
+                df['Name'] = df['Modified sequence']
 
     elif (measurement_type == 'OTHER') and (search_engine == 'OTHER') and (data_type == 'PROTEIN'):
         unique_cols = ['Genes', 'Proteins']
-        df = load_generic(path, unique_cols=unique_cols, sum_cols=raw_cols, first_cols=first_cols)
+        max_cols = ['Score']
+        sum_cols = raw_cols + ['Peptides']
+        df = load_generic(path, unique_cols=unique_cols, sum_cols=sum_cols, max_cols=max_cols)
         if 'Name' not in df.columns:
             df['Name'] = df['Genes']
 

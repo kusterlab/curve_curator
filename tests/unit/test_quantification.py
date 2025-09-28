@@ -73,6 +73,36 @@ class TestImputeNans:
         })
         pd.testing.assert_frame_equal(result, expected)
 
+    def test_whitespace_split_raw(self):
+        df = self.df.copy(deep=True)
+        df = df.rename(columns={col: f'Raw {col}'for col in df.columns})
+        print(df.columns)
+        result = quantification.impute_nans(df, df.columns, self.imputation_value, self.max_imputations)
+        expected = pd.DataFrame({
+            'Raw A': [1.0, 2.0, 0.0, 4.0],
+            'Raw B': [0.0, 6.0, 0.0, 8.0],
+            'Raw C': [9.0, 10.0, 0.0, 0.0],
+            'Raw D': [13.0, 14.0, 15.0, 16.0],
+            'Imputation N': [1, 0, 3, 1],
+            'Imputation Position': ['B', '', 'A;B;C', 'C'],
+        })
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_multi_whitespace_split_raw(self):
+        df = self.df.copy(deep=True)
+        df = df.rename(columns={col: f'Raw {col} nM'for col in df.columns})
+        print(df.columns)
+        result = quantification.impute_nans(df, df.columns, self.imputation_value, self.max_imputations)
+        expected = pd.DataFrame({
+            'Raw A nM': [1.0, 2.0, 0.0, 4.0],
+            'Raw B nM': [0.0, 6.0, 0.0, 8.0],
+            'Raw C nM': [9.0, 10.0, 0.0, 0.0],
+            'Raw D nM': [13.0, 14.0, 15.0, 16.0],
+            'Imputation N': [1, 0, 3, 1],
+            'Imputation Position': ['B nM', '', 'A nM;B nM;C nM', 'C nM'],
+        })
+        pd.testing.assert_frame_equal(result, expected)
+
 
 class TestNormalizeValues:
     df = pd.DataFrame({

@@ -81,7 +81,7 @@ def impute_nans(df, raw_cols, imputation_value, max_imputations):
     df : pd.DataFrame
     """
     def join_true_positions_from_index(row):
-        return ';'.join(map(lambda col_name: col_name.split(" ")[-1], row[row].index))
+        return ';'.join(map(lambda col_name: col_name.split(" ", 1)[-1], row[row].index))
 
     # Define the imputation matrix
     imputation_mask = df[raw_cols].isna() | (df[raw_cols] < imputation_value)

@@ -85,17 +85,12 @@ If you want to update CurveCurator to the latest version after you have installe
 <a name="rawdata_toc"/>
 
 #### 1. Prepare the raw data
+CurveCurator can deal with various different dose-dependent data formats and provides different customizable parsers.
+In essence, each file is a tab ("\t") separated file with data columns that have specific columns names that match to the parameter.toml file setup (see below point 2).
+
+We provide a detailed description for different data parser modes, how the data needs to be formatted accordingly, and how CurveCurator aggregates data in the [data folder](example_datasets/). If you have further questions you can always reach out for help here on GitHub.
 
 
-For Viability data, create a .txt file (tab separated) containing a "Name" column used as a sample identifier and Raw value, which can be intensities or ratios.
-
-For proteomics data, use the search engine of your choice and specify it in the toml file.
-Also, you must specify if it is peptide or protein data. Please search each dose-dependent experiment (one condition e.g. a single drug) separately.
-Name your experiments 1..N in the search engine. For TMT this is already done by most search engines.
-For MAXQUANT, use the protein.txt file for protein-based analysis and the evidence.txt for peptide-based analysis.
-For DIANN, it outputs raw file names as columns. Please rename manually to Raw 1..N.
-For PD, the order of the files is important. PD normally labels the output experiments with F1..N. These numbers will be parsed by the CurveCurator. Please make sure that toml file has the same N to dose correspondences.
-For MSFRAGGER, name your TMT channels or LFQ experiments Raw_1...N. The peptide-based analysis expects the (combined_)ion.tsv file. The protein-based analysis expects the (combined_)protein.tsv file.
 
 <a name="tomlfile_toc"/>
 

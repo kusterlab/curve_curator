@@ -1,6 +1,13 @@
+CurveCurator offers a nice API to fit and evaluate dose-response curves in your scripts. In the jupyter notebooks above, you can find examples of how to use CurveCurator as a package:
+
+- [Example for fitting a model](example_api_usage/Fit%20a%20dose-response%20model.ipynb)
+- [Example for plotting a model](example_api_usage/Manual%20curve%20plotting%20from%20pipeline%20output.ipynb)
+
+We try to make the API better in the future. If you have questions or feature requests, please open a GitHub issue.
+Below, we provide an incomplete list of functions that you may find useful.
+
 # API
 
-CurveCurator offers a nice API to fit and evaluated dose-response curves.
 
 ### Import CurveCurator as package: 
 

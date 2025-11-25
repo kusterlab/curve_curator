@@ -12,3 +12,4 @@ htmlcov
 dist
 .DS_Store
 .ipynb_checkpoints
+notebooks

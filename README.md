@@ -5,7 +5,7 @@
 [![Static Badge](https://img.shields.io/badge/short_summary-Wiley-6E0B2F?link=https%3A%2F%2Fanalyticalscience.wiley.com%2Fcontent%2Farticle-do%2Fstatistical-analysis-dose-response-curves)](https://analyticalscience.wiley.com/content/article-do/statistical-analysis-dose-response-curves)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8399823.svg)](https://doi.org/10.5281/zenodo.8399823)
 [![PyPI version](https://badge.fury.io/py/curve-curator.svg)](https://badge.fury.io/py/curve-curator)
-![Python versions](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-green)
+![Python versions](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-green)
 
 
 # CurveCurator

@@ -19,7 +19,7 @@ REFERENCE = {
     'Meta': ['id', 'condition', 'description', 'treatment_time'],
     'Experiment': ['experiments', 'doses', 'dose_scale', 'dose_unit', 'control_experiment', 'measurement_type', 'data_type', 'search_engine', 'search_engine_version'],
     'Paths': ['input_file', 'curves_file', 'decoys_file', 'fdr_file', 'normalization_file', 'mad_file', 'dashboard'],
-    'Processing': ['available_cores', 'max_missing', 'max_imputation', 'imputation', 'normalization', 'ratio_range'],
+    'Processing': ['available_cores', 'max_missing', 'max_imputation', 'imputation', 'imputation_pct', 'normalization', 'ratio_range'],
     'Curve Fit': ['front', 'slope', 'back', 'weights', 'interpolation', 'type', 'speed', 'max_iterations', 'control_fold_change', 'interpolation'],
     'F Statistic': ['alpha', 'fc_lim', 'optimized_dofs', 'loc', 'scale', 'dfn', 'dfd', 'quality_min', 'mtc_method', 'not_rmse_limit', 'not_p_limit', 'decoy_ratio', 'pEC50_filter'],
     'Dashboard': ['backend'],

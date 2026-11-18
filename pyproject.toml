@@ -14,7 +14,7 @@ pandas = "^2.1.0"
 scipy = "^1.10.1"
 statsmodels = "^0.14.0"
 tqdm = "^4.66.1"
-pytest = "^7.4.3"
+pytest = ">=7.4.3,<10"
 
 [tool.poetry.group.dev.dependencies]
 seaborn = "^0.12.2"
